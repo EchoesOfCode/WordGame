@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Ladder – Daily Word Ladder Game</title>
   <meta name="description" content="Change one letter at a time to get from the start word to the end word. A new puzzle every day!" />
   <meta property="og:title" content="Ladder – Daily Word Ladder Game" />
@@ -15,7 +15,8 @@
   
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #111; font-family: 'Space Grotesk', sans-serif; color: #fff; min-height: 100vh; }
+    html { height: 100%; overflow: hidden; }
+    body { background: #111; font-family: 'Space Grotesk', sans-serif; color: #fff; min-height: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
     .app { min-height: 100vh; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 16px 60px; user-select: none; }
 
@@ -41,7 +42,7 @@
     .cursor-tile.caret::after { content: ''; display: inline-block; width: 2px; height: 22px; background: #aaa; animation: blink 1s step-end infinite; }
     @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
 
-    .hidden-input { position: fixed; bottom: 0; left: 0; width: 100%; height: 1px; opacity: 0; pointer-events: none; font-size: 16px; border: none; outline: none; background: transparent; color: transparent; caret-color: transparent; }
+    .hidden-input { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; border: none; outline: none; background: transparent; color: transparent; caret-color: transparent; font-size: 16px; padding: 0; margin: 0; }
 
     .shake { animation: shake 0.35s ease; }
     @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
@@ -382,7 +383,7 @@ function App() {
   }, []);
   var focus = function focus() {
     var _inputRef$current;
-    return (_inputRef$current = inputRef.current) === null || _inputRef$current === void 0 ? void 0 : _inputRef$current.focus();
+    return (_inputRef$current = inputRef.current) === null || _inputRef$current === void 0 ? void 0 : _inputRef$current.focus({ preventScroll: true });
   };
   function handleKey(e) {
     if (won || loading) return;
@@ -617,7 +618,7 @@ function App() {
   }), /*#__PURE__*/React.createElement("div", {
     className: "app",
     onClick: focus,
-    onTouchStart: focus
+    onTouchStart: function(e) { focus(); }
   }, /*#__PURE__*/React.createElement("input", {
     ref: inputRef,
     className: "hidden-input",
