@@ -1,1 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ladder – Daily Word Ladder Game</title>
+  <meta name="description" content="Change one letter at a time to get from the start word to the end word. A new puzzle every day!" />
+  <meta property="og:title" content="Ladder – Daily Word Ladder Game" />
+  <meta property="og:description" content="Change one letter at a time. A new puzzle every day!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #111; font-family: 'Space Grotesk', sans-serif; color: #fff; min-height: 100vh; }
 
+    .app { min-height: 100vh; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 16px 60px; user-select: none; }
+
+    .header { width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; padding: 20px 0 4px; position: relative; }
+    .header-title { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
+    .header-icons { position: absolute; right: 0; display: flex; gap: 10px; }
+    .icon-btn { background: none; border: none; color: #777; font-size: 18px; cursor: pointer; padding: 4px; transition: color 0.15s; }
+    .icon-btn:hover { color: #ccc; }
+
+    .sub-label { font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+
+    .grid { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 14px; }
+    .grid-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .tiles { display: flex; gap: 4px; justify-content: center; }
+
+    .tile { width: 56px; height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .tile.anchor-start { background: #6C5CE7; }
+    .tile.anchor-end   { background: #16a34a; }
+    .tile.changed { box-shadow: 0 0 0 3px rgba(255,255,255,0.38); }
+
+    .cursor-tile { width: 56px; height: 56px; border-radius: 8px; background: #2a2a2a; border: 2px solid #444; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0; transition: border-color 0.15s; }
+    .cursor-tile.lit { border-color: #888; }
+    .cursor-tile.caret::after { content: ''; display: inline-block; width: 2px; height: 22px; background: #aaa; animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .hidden-input { position: fixed; bottom: 0; left: 0; width: 100%; height: 1px; opacity: 0; pointer-events: none; font-size: 16px; border: none; outline: none; background: transparent; color: transparent; caret-color: transparent; }
+
+    .shake { animation: shake 0.35s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+    .feedback-bar { height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; letter-spacing: 0.5px; color: #e07070; margin-bottom: 10px; }
+    .feedback-bar.loading { color: #999; }
+
+    .submit-btn { background: #fff; color: #111; border: none; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; padding: 12px 32px; cursor: pointer; margin-bottom: 22px; transition: opacity 0.15s, transform 0.1s; }
+    .submit-btn:hover:not(:disabled) { opacity: 0.85; }
+    .submit-btn:active:not(:disabled) { transform: scale(0.97); }
+    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .countdown-pill { border: 1.5px solid #333; border-radius: 999px; padding: 11px 26px; font-size: 14px; color: #bbb; margin-bottom: 16px; }
+    .countdown-pill strong { font-family: 'Space Mono', monospace; font-weight: 700; color: #fff; }
+
+    .footer-links { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 14px; color: #777; }
+    .footer-links a { color: #60a5fa; text-decoration: underline; cursor: pointer; }
+
+    /* WIN MODAL */
+    .win-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 150; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .win-box { background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 20px; padding: 40px 36px; text-align: center; max-width: 380px; width: 90%; animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes slideUp { from{opacity:0;transform:translateY(40px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .win-emoji { font-size: 52px; margin-bottom: 12px; }
+    .win-title { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+    .win-sub { color: #555; font-size: 13px; margin-bottom: 28px; letter-spacing: 1px; }
+    .win-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 22px; }
+    .win-stat { text-align: center; }
+    .win-stat-val { font-size: 38px; font-weight: 800; color: #4ade80; line-height: 1; }
+    .win-stat-lbl { font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
+    .win-record { font-size: 12px; color: #fbbf24; font-weight: 700; letter-spacing: 1px; margin-bottom: 20px; }
+    .win-actions { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+    .try-again-btn { background: transparent; border: 1.5px solid #333; color: #888; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; padding: 11px 26px; cursor: pointer; transition: all 0.15s; }
+    .try-again-btn:hover { border-color: #666; color: #fff; }
+    .whatsapp-btn { background: #25D366; color: #fff; border: none; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 11px 20px; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: opacity 0.15s; }
+    .whatsapp-btn:hover { opacity: 0.88; }
+
+    /* MODALS */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 100; animation: fadeIn 0.2s ease; }
+    .modal { background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 16px; padding: 30px; max-width: 360px; width: 90%; position: relative; }
+    .modal h2 { font-size: 20px; font-weight: 800; margin-bottom: 14px; }
+    .modal p { font-size: 13px; color: #999; line-height: 1.7; margin-bottom: 10px; }
+    .modal-example { display: flex; flex-direction: column; gap: 4px; margin: 14px 0; }
+    .ex-row { display: flex; gap: 4px; align-items: center; }
+    .ex-tile { width: 44px; height: 44px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; color: #fff; }
+    .ex-tile.changed-ex { box-shadow: 0 0 0 3px rgba(255,255,255,0.4); }
+    .ex-label { font-size: 11px; color: #555; margin-left: 8px; }
+    .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #666; font-size: 22px; cursor: pointer; line-height: 1; }
+    .modal-close:hover { color: #fff; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+    .stat-box { background: #242424; border-radius: 10px; padding: 16px 12px; text-align: center; }
+    .stat-box-val { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-box-val.green { color: #4ade80; }
+    .stat-box-val.gold  { color: #fbbf24; }
+    .stat-box-lbl { font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
+    .streak-bar { margin-top: 16px; }
+    .streak-bar-label { font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .streak-bar-track { height: 6px; background: #2a2a2a; border-radius: 3px; overflow: hidden; }
+    .streak-bar-fill { height: 100%; background: linear-gradient(90deg, #6C5CE7, #4ade80); border-radius: 3px; transition: width 0.6s ease; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+"use strict";
+
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var _React = React,
+  useState = _React.useState,
+  useEffect = _React.useEffect,
+  useRef = _React.useRef;
+
+// ── Update this URL after you publish! ──────────────────────────
+var SITE_URL = "https://YOUR-USERNAME.github.io/YOUR-REPO/";
+var WORD_PAIRS = [["SAND", "TRAP"], ["COLD", "WARM"], ["FIRE", "WIND"], ["LEAD", "GOLD"], ["HATE", "LOVE"], ["DARK", "LAMP"], ["HEAD", "TAIL"], ["WORK", "PLAY"], ["SHIP", "DOCK"], ["MAKE", "TAKE"], ["HAND", "FOOT"], ["STAR", "STOP"], ["WINE", "DINE"], ["BEAR", "LION"], ["PLAN", "PLOT"], ["SLIP", "TRIP"], ["BLUE", "CLUE"], ["FARM", "FIRM"], ["COAL", "COAT"], ["BALE", "TALE"]];
+var ROW_COLORS = ["#6C5CE7", "#8B3FD9", "#B030B0", "#D62878", "#E83020", "#F06010", "#F09000", "#E8B000", "#C8C000", "#88B800"];
+var CONFETTI_COLORS = ["#6C5CE7", "#F09000", "#4ade80", "#f472b6", "#60a5fa", "#fbbf24", "#e07070", "#fff"];
+var MAX_ROWS = 12;
+var STATS_KEY = "ladder-stats-v1";
+var WORD_LIST = new Set("aahs abed abet able ably abut aced aces ache achy acid acme acne acre acts adds adze aged ages agog ague ahem aide aids aims airs airy ajar akin ally alms aloe also alto alum amok amps anew ante ants apes apex arch area aria arid arks arms army arts ashy asks atom atop aunt auto avid avow away awed axes axis axle babe baby back bade bail bait bake bald bale ball balm band bane bang bank bare bark barn bars base bash bask bass bath bats baud bawl bead beak beam bean bear beat beds beef been beer beet bell belt best bile bill bind bird bite bits blew bloc blot blow blue blur boar boat body bold bolt bond bone book boom bore born boss bout bowl brag brew brim brow buck buff bulb bulk bull bump bunk burn bury bust busy butt buzz cage cake calf call calm came camp cane card care carp cart case cash cast cave cell char chat chef chin chip chop chow cite city clam clap claw clay clip clod clog clop clot club clue coal coat coil coin cold come cone conk cook cool cope copy cord cork corn cost cozy crab crew crop crow cube curb cure curl curt cute czar dabs daft dame damp dare dark darn dart dash data date dawn days daze dead deaf deal dear debt deck deed deem deep deft deli dent deny desk dial dice diet dill dime dine ding dips dire dirt disc dish disk dive dock dolt dome done doom dorm dose dote dove down drab drag draw drew drip drop drum dual duel dung dupe dusk dust duty dyes each earl earn ease east easy edge edit eggs else emit envy epic even ever evil exam exit expo face fact fade fail fair fake fall fame farm fast fate fawn faze feat feed feel feet fell felt fend fern file fill film find fine fire firm fish fist flag flap flat flaw flea flew flex flip flit flog flop flow foam foil folk fond font food fool foot fore fork form fort foul fowl free frog from fuel full fume fund fuse fuss fuzz gale gall game gape garb gash gasp gate gave gawk gaze gear gent germ gift gild gill gist give glad glee glob glow glue glum gnar goad goat goes gold golf gone gore gory gown grab gram gray grew grin grip grit grow grub gulf gulp gust guts guys hack hail half hall halo halt hand hang hard hare harm harp hate have hawk haze hazy head heal heap heat heed heel heft held helm herb here hero hide high hill hint hire hiss hive hoax hock hold hole home hood hook hoop hope horn host hour huff hulk hull hump hunt hurl husk hymn icon idea idle idol inch into iris isle jack jade jail jest jilt jink join joke jolt jump junk just keen keep kick kind king knit knob knot know lace lack laid lake lamb lamp land lane lard lark lash last late laud lava lawn lazy lead leaf leak lean leap left lend lens liar lick lied life lift like lily lime limp line link lion list live load loaf lobe lode lock loft lone long look loom loop lord lore loss loud love luck lull lump lure lurk lush lust made mail main make male mall mane mare mark mars mash mask mass mast mate math maze meal mean meat meet melt memo mend menu mere mesh mild mill mime mind mine mint mire miss mist moat mode mole molt monk moon moor mope more moss most moth move much muck mule muse musk must mold bold cold colt dolt fold gilt golf gust jolt molt volt wold name navy near neck need nest news next nice nick nine node none noon norm nose note noun obey oboe odds okay once only open oral orbs over owed owls pace pack page paid pail pair pale palm pane park part pass past path pave pawn peak pear peat peel peer pelt pest pick pier pile pill pine pink pipe plan play plea plod plop plot plow plug plum plus poem poet poke pole poll pond pool pore port pose pour prey prod prop prow pull pulp pump punt pure push quit quiz race rack raft rage raid rail rain rake ramp rang rank rant rash rasp rate read real reap rein rely rend rent rest rice rich ride rife rift ring riot rise risk road roam roar robe rock rode role romp roof room root rope rose rout rove ruin rule rump rune ruse rush rust sack safe sage said sail sake salt same sand sane sang sash save seal seam sear seed seek self sell send sent shed ship shoe shop shot show shut sick sift silk sill silt sink sire site size skip skit slam slap slat sled slew slim slip slit slob slop slow slug slum slur smug snag snap snip snob snug soak sock soft soil sold sole some song soon sore sort soul soup sour span spar spin spit spot spry spur stab stag star stay stem step stew stir stop stow stub stud stun such suit sulk sung sunk sure surf swan swap swat sway swim tack tail take tale talk tall tame tang tank tart task taut taxi teal team tear tell tend tent term test that thaw them then they thin this thud tick tide tidy tied tier tile till tilt time tint tiny tire toad toil told toll tomb tone tool tops tore torn toss tour town trap tray trek trim trio trip trod true tube tuck tuft tune turf tusk twin type ugly undo upon urge used user vale vane vary vast veal veer veil vein very vest veto vice view vine void vote wade wage wait wake walk wall wand wane ward ware warm warp wart wary wave wean weed weep weld well welt went were west when whim whip whiz wide wile will wilt wind wine wing wink wire wise wish wisp woad woke wold wolf womb wood woof word work worm wove wrap wren writ yard yarn yawn year yell yeti yoga yore your yowl zeal zero zest zinc zone zoom".split(" "));
+
+// ── Helpers ────────────────────────────────────────────────────
+function getDailyPair() {
+  var now = new Date();
+  var start = new Date(now.getFullYear(), 0, 0);
+  var day = Math.floor((now - start) / 86400000);
+  return WORD_PAIRS[day % WORD_PAIRS.length];
+}
+function getTodayKey() {
+  var d = new Date();
+  return "ladder-best-".concat(d.getFullYear(), "-").concat(d.getMonth(), "-").concat(d.getDate());
+}
+function getCountdown() {
+  var now = new Date();
+  var tom = new Date(now);
+  tom.setHours(24, 0, 0, 0);
+  var diff = tom - now;
+  var h = String(Math.floor(diff / 3600000)).padStart(2, "0");
+  var m = String(Math.floor(diff % 3600000 / 60000)).padStart(2, "0");
+  var s = String(Math.floor(diff % 60000 / 1000)).padStart(2, "0");
+  return "".concat(h, ":").concat(m, ":").concat(s);
+}
+function letterDiff(a, b) {
+  var d = 0;
+  for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+  return d;
+}
+function diffPositions(a, b) {
+  var pos = [];
+  for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) pos.push(i);
+  return pos;
+}
+function loadStats() {
+  try {
+    return JSON.parse(localStorage.getItem(STATS_KEY)) || {
+      played: 0,
+      wins: 0,
+      streak: 0,
+      bestStreak: 0,
+      totalSteps: 0,
+      lastWinDate: null
+    };
+  } catch (_unused) {
+    return {
+      played: 0,
+      wins: 0,
+      streak: 0,
+      bestStreak: 0,
+      totalSteps: 0,
+      lastWinDate: null
+    };
+  }
+}
+function saveStats(s) {
+  localStorage.setItem(STATS_KEY, JSON.stringify(s));
+}
+function isRealWord(_x) {
+  return _isRealWord.apply(this, arguments);
+} // ── Confetti ───────────────────────────────────────────────────
+function _isRealWord() {
+  _isRealWord = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(word) {
+    var res, _t;
+    return _regenerator().w(function (_context2) {
+      while (1) switch (_context2.p = _context2.n) {
+        case 0:
+          if (!WORD_LIST.has(word.toLowerCase())) {
+            _context2.n = 1;
+            break;
+          }
+          return _context2.a(2, true);
+        case 1:
+          _context2.p = 1;
+          _context2.n = 2;
+          return fetch("https://api.dictionaryapi.dev/api/v2/entries/en/".concat(word.toLowerCase()));
+        case 2:
+          res = _context2.v;
+          return _context2.a(2, res.ok);
+        case 3:
+          _context2.p = 3;
+          _t = _context2.v;
+          return _context2.a(2, false);
+      }
+    }, _callee2, null, [[1, 3]]);
+  }));
+  return _isRealWord.apply(this, arguments);
+}
+function Confetti(_ref) {
+  var active = _ref.active;
+  var canvasRef = useRef(null);
+  var rafRef = useRef(null);
+  var particles = useRef([]);
+  useEffect(function () {
+    if (!active) return;
+    var canvas = canvasRef.current;
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    particles.current = Array.from({
+      length: 160
+    }, function () {
+      return {
+        x: Math.random() * canvas.width,
+        y: -10 - Math.random() * 200,
+        r: 5 + Math.random() * 7,
+        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+        vx: (Math.random() - 0.5) * 4,
+        vy: 3 + Math.random() * 5,
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * 0.2,
+        shape: Math.random() > 0.5 ? "rect" : "circle",
+        w: 8 + Math.random() * 10,
+        h: 4 + Math.random() * 6,
+        alpha: 1
+      };
+    });
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var alive = false;
+      particles.current.forEach(function (p) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.12;
+        p.rot += p.rotV;
+        if (p.y > canvas.height * 0.7) p.alpha -= 0.018;
+        if (p.alpha > 0) alive = true;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        if (p.shape === "rect") ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+      if (alive) rafRef.current = requestAnimationFrame(draw);else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    rafRef.current = requestAnimationFrame(draw);
+    return function () {
+      return cancelAnimationFrame(rafRef.current);
+    };
+  }, [active]);
+  return /*#__PURE__*/React.createElement("canvas", {
+    ref: canvasRef,
+    style: {
+      position: "fixed",
+      inset: 0,
+      pointerEvents: "none",
+      zIndex: 200,
+      display: active ? "block" : "none"
+    }
+  });
+}
+
+// ── Main App ───────────────────────────────────────────────────
+function App() {
+  var _useState = useState(getDailyPair),
+    _useState2 = _slicedToArray(_useState, 1),
+    pair = _useState2[0];
+  var _useState3 = useState([]),
+    _useState4 = _slicedToArray(_useState3, 2),
+    rows = _useState4[0],
+    setRows = _useState4[1];
+  var _useState5 = useState([]),
+    _useState6 = _slicedToArray(_useState5, 2),
+    input = _useState6[0],
+    setInput = _useState6[1];
+  var _useState7 = useState(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    loading = _useState8[0],
+    setLoading = _useState8[1];
+  var _useState9 = useState({
+      text: "",
+      type: ""
+    }),
+    _useState0 = _slicedToArray(_useState9, 2),
+    feedback = _useState0[0],
+    setFeedback = _useState0[1];
+  var _useState1 = useState(false),
+    _useState10 = _slicedToArray(_useState1, 2),
+    won = _useState10[0],
+    setWon = _useState10[1];
+  var _useState11 = useState(null),
+    _useState12 = _slicedToArray(_useState11, 2),
+    bestToday = _useState12[0],
+    setBestToday = _useState12[1];
+  var _useState13 = useState(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    newRecord = _useState14[0],
+    setNewRecord = _useState14[1];
+  var _useState15 = useState(getCountdown()),
+    _useState16 = _slicedToArray(_useState15, 2),
+    countdown = _useState16[0],
+    setCountdown = _useState16[1];
+  var _useState17 = useState(false),
+    _useState18 = _slicedToArray(_useState17, 2),
+    showHelp = _useState18[0],
+    setShowHelp = _useState18[1];
+  var _useState19 = useState(false),
+    _useState20 = _slicedToArray(_useState19, 2),
+    showStats = _useState20[0],
+    setShowStats = _useState20[1];
+  var _useState21 = useState(loadStats),
+    _useState22 = _slicedToArray(_useState21, 2),
+    stats = _useState22[0],
+    setStats = _useState22[1];
+  var _useState23 = useState(false),
+    _useState24 = _slicedToArray(_useState23, 2),
+    shaking = _useState24[0],
+    setShaking = _useState24[1];
+  var _useState25 = useState(false),
+    _useState26 = _slicedToArray(_useState25, 2),
+    confetti = _useState26[0],
+    setConfetti = _useState26[1];
+  var inputRef = useRef(null);
+  var _pair = _slicedToArray(pair, 2),
+    startWord = _pair[0],
+    endWord = _pair[1];
+  var wordLen = startWord.length;
+  var allWords = [startWord].concat(_toConsumableArray(rows.map(function (r) {
+    return r.word;
+  })));
+  var currentWord = allWords[allWords.length - 1];
+  var today = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric"
+  });
+  useEffect(function () {
+    var s = localStorage.getItem(getTodayKey());
+    if (s) setBestToday(parseInt(s));
+  }, []);
+  useEffect(function () {
+    var t = setInterval(function () {
+      return setCountdown(getCountdown());
+    }, 1000);
+    return function () {
+      return clearInterval(t);
+    };
+  }, []);
+  var focus = function focus() {
+    var _inputRef$current;
+    return (_inputRef$current = inputRef.current) === null || _inputRef$current === void 0 ? void 0 : _inputRef$current.focus();
+  };
+  function handleKey(e) {
+    if (won || loading) return;
+    var key = e.key.toUpperCase();
+    if (/^[A-Z]$/.test(key) && input.length < wordLen) {
+      setInput(function (prev) {
+        return [].concat(_toConsumableArray(prev), [key]);
+      });
+      setFeedback({
+        text: "",
+        type: ""
+      });
+    } else if (e.key === "Backspace") {
+      setInput(function (prev) {
+        return prev.slice(0, -1);
+      });
+      setFeedback({
+        text: "",
+        type: ""
+      });
+    } else if (e.key === "Enter") {
+      handleSubmit();
+    }
+  }
+  function handleChange(e) {
+    // Mobile: capture typed characters from onChange
+    if (won || loading) return;
+    var val = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+    // Reset the input value so we can detect future changes
+    e.target.value = "";
+    if (val.length === 0) return;
+    var lastChar = val[val.length - 1];
+    setInput(function (prev) {
+      if (prev.length < wordLen) {
+        setFeedback({ text: "", type: "" });
+        return [].concat(_toConsumableArray(prev), [lastChar]);
+      }
+      return prev;
+    });
+  }
+  function handleSubmit() {
+    return _handleSubmit.apply(this, arguments);
+  }
+  function _handleSubmit() {
+    _handleSubmit = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var word, diff, valid, changedPos, newRows, steps, key, existing, isNew, todayStr, s, yesterday;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.n) {
+          case 0:
+            word = input.join("");
+            if (!(word.length !== wordLen || loading || won)) {
+              _context.n = 1;
+              break;
+            }
+            return _context.a(2);
+          case 1:
+            diff = letterDiff(currentWord, word);
+            if (!(diff === 0)) {
+              _context.n = 2;
+              break;
+            }
+            triggerError("Same as current word");
+            return _context.a(2);
+          case 2:
+            if (!(diff !== 1)) {
+              _context.n = 3;
+              break;
+            }
+            triggerError("Change exactly 1 letter (changed ".concat(diff, ")"));
+            return _context.a(2);
+          case 3:
+            if (!allWords.includes(word)) {
+              _context.n = 4;
+              break;
+            }
+            triggerError("Already used that word");
+            return _context.a(2);
+          case 4:
+            setLoading(true);
+            setFeedback({
+              text: "Checking…",
+              type: "loading"
+            });
+            _context.n = 5;
+            return isRealWord(word);
+          case 5:
+            valid = _context.v;
+            if (valid) {
+              _context.n = 6;
+              break;
+            }
+            triggerError("\"".concat(word, "\" isn't a valid word"));
+            setLoading(false);
+            return _context.a(2);
+          case 6:
+            changedPos = diffPositions(currentWord, word);
+            newRows = [].concat(_toConsumableArray(rows), [{
+              word: word,
+              changedPos: changedPos
+            }]);
+            setRows(newRows);
+            setInput([]);
+            setFeedback({
+              text: "",
+              type: ""
+            });
+            if (word === endWord) {
+              steps = newRows.length;
+              key = getTodayKey();
+              existing = localStorage.getItem(key);
+              isNew = !existing || steps < parseInt(existing);
+              if (isNew) {
+                localStorage.setItem(key, String(steps));
+                setBestToday(steps);
+                setNewRecord(true);
+              }
+              todayStr = new Date().toDateString();
+              s = loadStats();
+              s.played += 1;
+              s.wins += 1;
+              s.totalSteps += steps;
+              yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              s.streak = s.lastWinDate === yesterday.toDateString() || s.lastWinDate === todayStr ? s.streak + 1 : 1;
+              s.bestStreak = Math.max(s.bestStreak, s.streak);
+              s.lastWinDate = todayStr;
+              saveStats(s);
+              setStats(s);
+              setConfetti(true);
+              setTimeout(function () {
+                return setWon(true);
+              }, 400);
+              setTimeout(function () {
+                return setConfetti(false);
+              }, 4000);
+            }
+            setLoading(false);
+            setTimeout(focus, 50);
+          case 7:
+            return _context.a(2);
+        }
+      }, _callee);
+    }));
+    return _handleSubmit.apply(this, arguments);
+  }
+  function triggerError(msg) {
+    setFeedback({
+      text: msg,
+      type: "error"
+    });
+    setShaking(true);
+    setTimeout(function () {
+      return setShaking(false);
+    }, 400);
+  }
+  function reset() {
+    setRows([]);
+    setInput([]);
+    setFeedback({
+      text: "",
+      type: ""
+    });
+    setWon(false);
+    setNewRecord(false);
+    setConfetti(false);
+    setTimeout(focus, 50);
+  }
+  function WordRow(_ref2) {
+    var word = _ref2.word,
+      prevWord = _ref2.prevWord,
+      color = _ref2.color,
+      anchor = _ref2.anchor,
+      isEnd = _ref2.isEnd;
+    var changed = prevWord ? diffPositions(prevWord, word) : [];
+    return /*#__PURE__*/React.createElement("div", {
+      className: "grid-row"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "tiles"
+    }, word.split("").map(function (l, i) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: i,
+        className: "tile ".concat(anchor ? isEnd ? "anchor-end" : "anchor-start" : "filled").concat(changed.includes(i) ? " changed" : ""),
+        style: anchor ? {} : {
+          background: color
+        }
+      }, l);
+    })));
+  }
+  function ActiveRow() {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "grid-row"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "tiles".concat(shaking ? " shake" : "")
+    }, input.map(function (l, i) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: i,
+        className: "cursor-tile lit"
+      }, l);
+    }), input.length < wordLen && /*#__PURE__*/React.createElement("div", {
+      className: "cursor-tile lit caret"
+    }), Array.from({
+      length: Math.max(0, wordLen - input.length - 1)
+    }).map(function (_, i) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: i,
+        className: "cursor-tile"
+      });
+    })));
+  }
+  var exWords = ["COLD", "CORD", "WORD", "WARD", "WARM"];
+  function shareWhatsApp() {
+    var emojiRows = rows.map(function (r, i) {
+      return r.word.split("").map(function (_, j) {
+        return allWords[i][j] !== r.word[j] ? "🟢" : "⚪";
+      }).join("");
+    }).join("\n");
+    var text = "\uD83D\uDD24 *Ladder* \xB7 ".concat(today, "\n\n*").concat(startWord, "*\n").concat(emojiRows, "\n*").concat(endWord, "*\n\nSolved in *").concat(rows.length, " step").concat(rows.length === 1 ? "" : "s", "*! Can you beat me?\n").concat(SITE_URL);
+    if (navigator.share) {
+      navigator.share({
+        text: text
+      })["catch"](function () {});
+    } else {
+      navigator.clipboard.writeText(text).then(function () {
+        alert("Copied! Paste into WhatsApp.");
+      })["catch"](function () {
+        window.open("https://wa.me/?text=".concat(encodeURIComponent(text)), "_blank");
+      });
+    }
+  }
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Confetti, {
+    active: confetti
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "app",
+    onClick: focus,
+    onTouchStart: focus
+  }, /*#__PURE__*/React.createElement("input", {
+    ref: inputRef,
+    className: "hidden-input",
+    onKeyDown: handleKey,
+    onChange: handleChange,
+    inputMode: "text",
+    autoCapitalize: "none",
+    autoCorrect: "off",
+    autoComplete: "off",
+    spellCheck: false,
+    autoFocus: true
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "header"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "header-title"
+  }, "Ladder"), /*#__PURE__*/React.createElement("div", {
+    className: "header-icons"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn",
+    onClick: function onClick(e) {
+      e.stopPropagation();
+      setShowStats(true);
+    }
+  }, "\uD83D\uDCCA"), /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn",
+    onClick: function onClick(e) {
+      e.stopPropagation();
+      setShowHelp(true);
+    }
+  }, "\u2753"))), /*#__PURE__*/React.createElement("div", {
+    className: "sub-label"
+  }, "Change 1 letter per step \xB7 ", today), /*#__PURE__*/React.createElement("div", {
+    className: "grid"
+  }, /*#__PURE__*/React.createElement(WordRow, {
+    word: startWord,
+    anchor: true
+  }), rows.map(function (r, i) {
+    return /*#__PURE__*/React.createElement(WordRow, {
+      key: i,
+      word: r.word,
+      color: ROW_COLORS[(i + 1) % ROW_COLORS.length],
+      prevWord: allWords[i]
+    });
+  }), !won && rows.length < MAX_ROWS && /*#__PURE__*/React.createElement(ActiveRow, null), /*#__PURE__*/React.createElement(WordRow, {
+    word: endWord,
+    anchor: true,
+    isEnd: true
+  })), !won && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "feedback-bar ".concat(feedback.type)
+  }, feedback.text), /*#__PURE__*/React.createElement("button", {
+    className: "submit-btn",
+    disabled: input.length !== wordLen || loading,
+    onClick: function onClick(e) {
+      e.stopPropagation();
+      handleSubmit();
+    }
+  }, loading ? "Checking…" : "Submit →")), /*#__PURE__*/React.createElement("div", {
+    className: "countdown-pill"
+  }, "Next Ladder in ", /*#__PURE__*/React.createElement("strong", null, countdown)), /*#__PURE__*/React.createElement("div", {
+    className: "footer-links"
+  }, /*#__PURE__*/React.createElement("span", null, "A new puzzle every day at midnight"))), won && /*#__PURE__*/React.createElement("div", {
+    className: "win-overlay",
+    onClick: reset
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "win-box",
+    onClick: function onClick(e) {
+      return e.stopPropagation();
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "win-emoji"
+  }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
+    className: "win-title"
+  }, "Solved!"), /*#__PURE__*/React.createElement("div", {
+    className: "win-sub"
+  }, startWord, " \u2192 ", endWord), /*#__PURE__*/React.createElement("div", {
+    className: "win-stats"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "win-stat"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "win-stat-val"
+  }, rows.length), /*#__PURE__*/React.createElement("div", {
+    className: "win-stat-lbl"
+  }, "Steps")), bestToday && /*#__PURE__*/React.createElement("div", {
+    className: "win-stat"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "win-stat-val"
+  }, bestToday), /*#__PURE__*/React.createElement("div", {
+    className: "win-stat-lbl"
+  }, "Best"))), newRecord && /*#__PURE__*/React.createElement("div", {
+    className: "win-record"
+  }, "\u2B50 New personal best!"), /*#__PURE__*/React.createElement("div", {
+    className: "win-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "try-again-btn",
+    onClick: reset
+  }, "Try again"), /*#__PURE__*/React.createElement("button", {
+    className: "whatsapp-btn",
+    onClick: function onClick(e) {
+      e.stopPropagation();
+      shareWhatsApp();
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "currentColor"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.428a.5.5 0 0 0 .609.601l5.794-1.522A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.655-.516-5.17-1.415l-.37-.22-3.838 1.006 1.028-3.736-.241-.386A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
+  })), "Share on WhatsApp")))), showStats && /*#__PURE__*/React.createElement("div", {
+    className: "modal-bg",
+    onClick: function onClick() {
+      return setShowStats(false);
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "modal",
+    onClick: function onClick(e) {
+      return e.stopPropagation();
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "modal-close",
+    onClick: function onClick() {
+      return setShowStats(false);
+    }
+  }, "\xD7"), /*#__PURE__*/React.createElement("h2", null, "Your Stats"), /*#__PURE__*/React.createElement("div", {
+    className: "stats-grid"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-val"
+  }, stats.played), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-lbl"
+  }, "Played")), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-val green"
+  }, stats.wins), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-lbl"
+  }, "Solved")), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-val gold"
+  }, stats.streak), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-lbl"
+  }, "Streak \uD83D\uDD25")), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-val"
+  }, stats.bestStreak), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-lbl"
+  }, "Best Streak")), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-val green"
+  }, bestToday !== null && bestToday !== void 0 ? bestToday : "–"), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-lbl"
+  }, "Today's Best")), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-val"
+  }, stats.wins > 0 ? (stats.totalSteps / stats.wins).toFixed(1) : "–"), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-lbl"
+  }, "Avg Steps"))), stats.bestStreak > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "streak-bar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "streak-bar-label"
+  }, /*#__PURE__*/React.createElement("span", null, "Current streak"), /*#__PURE__*/React.createElement("span", null, stats.streak, " / ", stats.bestStreak, " best")), /*#__PURE__*/React.createElement("div", {
+    className: "streak-bar-track"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "streak-bar-fill",
+    style: {
+      width: "".concat(Math.min(100, stats.streak / Math.max(stats.bestStreak, 1) * 100), "%")
+    }
+  }))), stats.played === 0 && /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "#555",
+      textAlign: "center",
+      marginTop: "8px"
+    }
+  }, "Play your first game to see stats!"))), showHelp && /*#__PURE__*/React.createElement("div", {
+    className: "modal-bg",
+    onClick: function onClick() {
+      return setShowHelp(false);
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "modal",
+    onClick: function onClick(e) {
+      return e.stopPropagation();
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "modal-close",
+    onClick: function onClick() {
+      return setShowHelp(false);
+    }
+  }, "\xD7"), /*#__PURE__*/React.createElement("h2", null, "How to play"), /*#__PURE__*/React.createElement("p", null, "Turn the ", /*#__PURE__*/React.createElement("strong", null, "start word"), " into the ", /*#__PURE__*/React.createElement("strong", null, "target word"), " by changing ", /*#__PURE__*/React.createElement("strong", null, "exactly one letter"), " at a time. Every step must be a real word."), /*#__PURE__*/React.createElement("div", {
+    className: "modal-example"
+  }, exWords.map(function (w, i) {
+    var prev = i > 0 ? exWords[i - 1] : null;
+    var changed = prev ? diffPositions(prev, w) : [];
+    return /*#__PURE__*/React.createElement("div", {
+      key: w,
+      className: "ex-row"
+    }, w.split("").map(function (l, j) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: j,
+        className: "ex-tile".concat(changed.includes(j) ? " changed-ex" : ""),
+        style: {
+          background: ROW_COLORS[i % ROW_COLORS.length]
+        }
+      }, l);
+    }), changed.length > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "ex-label"
+    }, "\u2190 changed \"", w[changed[0]], "\""));
+  })), /*#__PURE__*/React.createElement("p", null, "Fewer steps = better. Beat your personal best each day!"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "#555"
+    }
+  }, "New puzzle drops every day at midnight."))));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
+
+</script>
+</body>
+</html>
