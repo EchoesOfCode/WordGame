@@ -258,6 +258,7 @@ const CSS = `
     color: var(--muted2);
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    margin-bottom: 20px;
   }
   .archive-playing { display: flex; align-items: center; gap: 10px; color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
   .back-today-btn {
@@ -302,8 +303,8 @@ const CSS = `
     flex-shrink: 0;
     letter-spacing: 0.05em;
   }
-  .tile.anchor-start { background: #2a2060; border: 1px solid rgba(160,140,255,0.3); color: #c4baf5; }
-  .tile.anchor-end   { background: #0f2e1e; border: 1px solid rgba(74,158,110,0.35); color: #7ecba0; }
+  .tile.anchor-start { background: #3d2e9e; border: 1px solid rgba(180,160,255,0.5); color: #ddd8ff; }
+  .tile.anchor-end   { background: #165c30; border: 1px solid rgba(100,210,140,0.45); color: #a0f0bc; }
   .tile.filled       { }
   .tile.changed      { outline: 2px solid rgba(255,255,255,0.25); outline-offset: 1px; }
 
@@ -511,18 +512,30 @@ const CSS = `
     border: 1px solid var(--border2);
     border-radius: 16px;
     padding: 28px 24px 24px;
-    width: 96vw;
-    max-width: 860px;
+    width: fit-content;
+    max-width: min(96vw, 700px);
+    min-width: min(96vw, 340px);
     max-height: 88vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
+  }
+  .archive-modal-full > .modal-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
   }
   .archive-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
+    flex-shrink: 0;
+    gap: 16px;
+  }
+  .archive-modal-header .modal-close {
+    position: static;
     flex-shrink: 0;
   }
   .archive-modal-header h2 {
@@ -534,12 +547,13 @@ const CSS = `
   }
   .archive-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
     overflow-y: auto;
     padding-right: 4px;
+    width: 100%;
   }
-  @media (max-width: 600px) {
+  @media (max-width: 420px) {
     .archive-grid { grid-template-columns: repeat(2, 1fr); }
     .archive-modal-full { padding: 20px 14px 14px; }
   }
@@ -656,12 +670,12 @@ function ArchiveModal({
   }, /*#__PURE__*/React.createElement("div", {
     className: "archive-modal-full",
     onClick: e => e.stopPropagation()
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "archive-modal-header"
-  }, /*#__PURE__*/React.createElement("h2", null, "The Archive"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("button", {
     className: "modal-close",
     onClick: onClose
-  }, "\xD7")), /*#__PURE__*/React.createElement("div", {
+  }, "\xD7"), /*#__PURE__*/React.createElement("div", {
+    className: "archive-modal-header"
+  }, /*#__PURE__*/React.createElement("h2", null, "The Archive")), /*#__PURE__*/React.createElement("div", {
     className: "archive-grid"
   }, items.map(({
     index,
