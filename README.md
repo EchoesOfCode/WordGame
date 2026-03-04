@@ -1,4 +1,4 @@
-# 🔤 Ladder — Daily Word Ladder Game
+# 🔤 Worder — Daily Word Ladder Game
 
 A daily word puzzle game where you transform one word into another by changing **exactly one letter at a time**. Every step must be a real word. Fewer steps = better score.
 
