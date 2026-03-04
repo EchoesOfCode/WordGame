@@ -293,10 +293,17 @@ const CSS = `
     font-weight: 500;
     color: var(--muted);
     width: 18px;
+    min-width: 18px;
     text-align: right;
     flex-shrink: 0;
-    margin-right: 4px;
+    margin-right: 6px;
     user-select: none;
+  }
+  .step-spacer {
+    width: 18px;
+    min-width: 18px;
+    margin-right: 6px;
+    flex-shrink: 0;
   }
 
   .tile {
@@ -346,7 +353,16 @@ const CSS = `
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-  .hidden-input { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; border: none; outline: none; background: transparent; color: transparent; caret-color: transparent; font-size: 16px; }
+  .hidden-input { 
+    position: absolute; 
+    top: 50vh; 
+    left: 50%; 
+    width: 1px; height: 1px; 
+    opacity: 0; border: none; outline: none; 
+    background: transparent; color: transparent; 
+    caret-color: transparent; font-size: 16px;
+    pointer-events: none;
+  }
 
   .shake { animation: shake 0.3s ease; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
@@ -354,6 +370,7 @@ const CSS = `
   /* ── Feedback ── */
   .feedback-bar {
     height: 20px;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -363,11 +380,15 @@ const CSS = `
     color: var(--red);
     margin-bottom: 12px;
     text-transform: uppercase;
+    text-align: center;
   }
   .feedback-bar.loading { color: var(--muted2); }
 
   /* ── Submit ── */
   .submit-btn {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     background: var(--text);
     color: var(--bg);
     border: none;
@@ -864,12 +885,15 @@ function App() {
       text: "",
       type: ""
     });
-    setTimeout(() => {
-      activeRowRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
+    // Wait for React to render the new row, then scroll it into view
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        activeRowRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
       });
-    }, 50);
+    });
     if (word === endWord) {
       const steps = newRows.length;
       const existing = localStorage.getItem(getBestKey(puzzleIndex));
@@ -900,7 +924,6 @@ function App() {
       setTimeout(() => setConfetti(false), 4000);
     }
     setLoading(false);
-    setTimeout(focus, 50);
   }
   function triggerError(msg) {
     setFeedback({
@@ -951,7 +974,9 @@ function App() {
       style: anchor ? {} : {
         background: color
       }
-    }, l))));
+    }, l))), /*#__PURE__*/React.createElement("div", {
+      className: "step-spacer"
+    }));
   }
   function ActiveRow() {
     return /*#__PURE__*/React.createElement("div", {
@@ -971,7 +996,9 @@ function App() {
     }).map((_, i) => /*#__PURE__*/React.createElement("div", {
       key: i,
       className: "cursor-tile"
-    }))));
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "step-spacer"
+    }));
   }
   const exWords = ["COLD", "CORD", "WORD", "WARD", "WARM"];
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, CSS), /*#__PURE__*/React.createElement(Confetti, {
