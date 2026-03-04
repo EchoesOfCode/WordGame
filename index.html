@@ -3,176 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Ladder – Daily Word Ladder Game</title>
-  <meta name="description" content="Change one letter at a time to get from the start word to the end word. A new puzzle every day!" />
-  <meta property="og:title" content="Ladder – Daily Word Ladder Game" />
-  <meta property="og:description" content="Change one letter at a time. A new puzzle every day!" />
+  <title>Worder – Daily Word Ladder Puzzle</title>
+  <meta name="description" content="Change one letter at a time to transform the start word into the target word. A free daily word ladder puzzle — new challenge every day!" />
+  <meta name="keywords" content="word ladder, word game, daily puzzle, worder, word chain, letter game, brain game, word puzzle" />
+  <meta name="author" content="Worder" />
+  <link rel="canonical" href="https://echoesofcode.github.io/WordGame/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Worder – Daily Word Ladder Puzzle" />
+  <meta property="og:description" content="Change one letter at a time. A free daily word puzzle — can you reach the target word in the fewest steps?" />
+  <meta property="og:url" content="https://echoesofcode.github.io/WordGame/" />
+  <meta property="og:site_name" content="Worder" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Worder – Daily Word Ladder Puzzle" />
+  <meta name="twitter:description" content="Change one letter at a time. A free daily word puzzle — new challenge every day!" />
+  <meta name="robots" content="index, follow" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID" crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { height: 100%; overflow: hidden; }
-    body { background: #111; font-family: 'Space Grotesk', sans-serif; color: #fff; min-height: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-
-    .app { min-height: 100vh; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 16px 60px; user-select: none; }
-
-    .header { width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; padding: 20px 0 4px; position: relative; }
-    .header-title { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
-    .header-icons { position: absolute; right: 0; display: flex; gap: 10px; }
-    .icon-btn { background: none; border: none; color: #777; font-size: 18px; cursor: pointer; padding: 4px; transition: color 0.15s; }
-    .icon-btn:hover { color: #ccc; }
-
-    .sub-label { font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
-
-    .grid { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 14px; }
-    .grid-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .tiles { display: flex; gap: 4px; justify-content: center; }
-
-    .tile { width: 56px; height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .tile.anchor-start { background: #6C5CE7; }
-    .tile.anchor-end   { background: #16a34a; }
-    .tile.changed { box-shadow: 0 0 0 3px rgba(255,255,255,0.38); }
-
-    .cursor-tile { width: 56px; height: 56px; border-radius: 8px; background: #2a2a2a; border: 2px solid #444; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0; transition: border-color 0.15s; }
-    .cursor-tile.lit { border-color: #888; }
-    .cursor-tile.caret::after { content: ''; display: inline-block; width: 2px; height: 22px; background: #aaa; animation: blink 1s step-end infinite; }
-    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
-
-    .hidden-input { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; border: none; outline: none; background: transparent; color: transparent; caret-color: transparent; font-size: 16px; padding: 0; margin: 0; }
-
-    .shake { animation: shake 0.35s ease; }
-    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
-
-    .feedback-bar { height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; letter-spacing: 0.5px; color: #e07070; margin-bottom: 10px; }
-    .feedback-bar.loading { color: #999; }
-
-    .submit-btn { background: #fff; color: #111; border: none; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; padding: 12px 32px; cursor: pointer; margin-bottom: 22px; transition: opacity 0.15s, transform 0.1s; }
-    .submit-btn:hover:not(:disabled) { opacity: 0.85; }
-    .submit-btn:active:not(:disabled) { transform: scale(0.97); }
-    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    .countdown-pill { border: 1.5px solid #333; border-radius: 999px; padding: 11px 26px; font-size: 14px; color: #bbb; margin-bottom: 16px; }
-    .countdown-pill strong { font-family: 'Space Mono', monospace; font-weight: 700; color: #fff; }
-
-    .footer-links { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 14px; color: #777; }
-    .footer-links a { color: #60a5fa; text-decoration: underline; cursor: pointer; }
-
-    /* WIN MODAL */
-    .win-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 150; animation: fadeIn 0.25s ease; }
-    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-    .win-box { background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 20px; padding: 40px 36px; text-align: center; max-width: 380px; width: 90%; animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1); }
-    @keyframes slideUp { from{opacity:0;transform:translateY(40px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
-    .win-emoji { font-size: 52px; margin-bottom: 12px; }
-    .win-title { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
-    .win-sub { color: #555; font-size: 13px; margin-bottom: 28px; letter-spacing: 1px; }
-    .win-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 22px; }
-    .win-stat { text-align: center; }
-    .win-stat-val { font-size: 38px; font-weight: 800; color: #4ade80; line-height: 1; }
-    .win-stat-lbl { font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
-    .win-record { font-size: 12px; color: #fbbf24; font-weight: 700; letter-spacing: 1px; margin-bottom: 20px; }
-    .win-actions { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
-    .try-again-btn { background: transparent; border: 1.5px solid #333; color: #888; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; padding: 11px 26px; cursor: pointer; transition: all 0.15s; }
-    .try-again-btn:hover { border-color: #666; color: #fff; }
-    .whatsapp-btn { background: #25D366; color: #fff; border: none; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 11px 20px; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: opacity 0.15s; }
-    .whatsapp-btn:hover { opacity: 0.88; }
-
-    /* MODALS */
-    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 100; animation: fadeIn 0.2s ease; }
-    .modal { background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 16px; padding: 30px; max-width: 360px; width: 90%; position: relative; }
-    .modal h2 { font-size: 20px; font-weight: 800; margin-bottom: 14px; }
-    .modal p { font-size: 13px; color: #999; line-height: 1.7; margin-bottom: 10px; }
-    .modal-example { display: flex; flex-direction: column; gap: 4px; margin: 14px 0; }
-    .ex-row { display: flex; gap: 4px; align-items: center; }
-    .ex-tile { width: 44px; height: 44px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; color: #fff; }
-    .ex-tile.changed-ex { box-shadow: 0 0 0 3px rgba(255,255,255,0.4); }
-    .ex-label { font-size: 11px; color: #555; margin-left: 8px; }
-    .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #666; font-size: 22px; cursor: pointer; line-height: 1; }
-    .modal-close:hover { color: #fff; }
-
-    /* STATS */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
-    .stat-box { background: #242424; border-radius: 10px; padding: 16px 12px; text-align: center; }
-    .stat-box-val { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
-    .stat-box-val.green { color: #4ade80; }
-    .stat-box-val.gold  { color: #fbbf24; }
-    .stat-box-lbl { font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
-    .streak-bar { margin-top: 16px; }
-    .streak-bar-label { font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; }
-    .streak-bar-track { height: 6px; background: #2a2a2a; border-radius: 3px; overflow: hidden; }
-    .streak-bar-fill { height: 100%; background: linear-gradient(90deg, #6C5CE7, #4ade80); border-radius: 3px; transition: width 0.6s ease; }
-  </style>
 </head>
 <body>
   <div id="root"></div>
-
   <script>
-"use strict";
+const { useState, useEffect, useRef } = React;
 
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-var _React = React,
-  useState = _React.useState,
-  useEffect = _React.useEffect,
-  useRef = _React.useRef;
+const SITE_URL = "https://echoesofcode.github.io/WordGame/";
+const WORD_PAIRS = [["SAND", "TRAP"], ["COLD", "WARM"], ["FIRE", "WIND"], ["LEAD", "GOLD"], ["HATE", "LOVE"], ["DARK", "LAMP"], ["HEAD", "TAIL"], ["WORK", "PLAY"], ["SHIP", "DOCK"], ["MAKE", "TAKE"], ["HAND", "FOOT"], ["STAR", "STOP"], ["WINE", "DINE"], ["BEAR", "LION"], ["PLAN", "PLOT"], ["SLIP", "TRIP"], ["BLUE", "CLUE"], ["FARM", "FIRM"], ["COAL", "COAT"], ["BALE", "TALE"], ["BOLD", "COLD"], ["WORD", "WARD"], ["PALE", "TALE"], ["PINE", "WINE"], ["HIRE", "FIRE"], ["BONE", "CONE"], ["LAKE", "LANE"], ["RING", "KING"], ["BOOT", "BOOK"], ["CORD", "WORD"]];
+const ROW_COLORS = ["#6C5CE7", "#8B3FD9", "#B030B0", "#D62878", "#E83020", "#F06010", "#F09000", "#E8B000", "#C8C000", "#88B800"];
+const MAX_ROWS = 12;
+const CONFETTI_COLORS = ["#6C5CE7", "#F09000", "#4ade80", "#f472b6", "#60a5fa", "#fbbf24", "#e07070", "#fff"];
+const STATS_KEY = "worder-stats-v1";
+const EPOCH = new Date(Date.UTC(2026, 2, 4)); // March 4 2026 = puzzle #1
 
-// ── Update this URL after you publish! ──────────────────────────
-var SITE_URL = "https://YOUR-USERNAME.github.io/YOUR-REPO/";
-var WORD_PAIRS = [["SAND", "TRAP"], ["COLD", "WARM"], ["FIRE", "WIND"], ["LEAD", "GOLD"], ["HATE", "LOVE"], ["DARK", "LAMP"], ["HEAD", "TAIL"], ["WORK", "PLAY"], ["SHIP", "DOCK"], ["MAKE", "TAKE"], ["HAND", "FOOT"], ["STAR", "STOP"], ["WINE", "DINE"], ["BEAR", "LION"], ["PLAN", "PLOT"], ["SLIP", "TRIP"], ["BLUE", "CLUE"], ["FARM", "FIRM"], ["COAL", "COAT"], ["BALE", "TALE"]];
-var ROW_COLORS = ["#6C5CE7", "#8B3FD9", "#B030B0", "#D62878", "#E83020", "#F06010", "#F09000", "#E8B000", "#C8C000", "#88B800"];
-var CONFETTI_COLORS = ["#6C5CE7", "#F09000", "#4ade80", "#f472b6", "#60a5fa", "#fbbf24", "#e07070", "#fff"];
-var MAX_ROWS = 12;
-var STATS_KEY = "ladder-stats-v1";
-var WORD_LIST = new Set("aahs abed abet able ably abut aced aces ache achy acid acme acne acre acts adds adze aged ages agog ague ahem aide aids aims airs airy ajar akin ally alms aloe also alto alum amok amps anew ante ants apes apex arch area aria arid arks arms army arts ashy asks atom atop aunt auto avid avow away awed axes axis axle babe baby back bade bail bait bake bald bale ball balm band bane bang bank bare bark barn bars base bash bask bass bath bats baud bawl bead beak beam bean bear beat beds beef been beer beet bell belt best bile bill bind bird bite bits blew bloc blot blow blue blur boar boat body bold bolt bond bone book boom bore born boss bout bowl brag brew brim brow buck buff bulb bulk bull bump bunk burn bury bust busy butt buzz cage cake calf call calm came camp cane card care carp cart case cash cast cave cell char chat chef chin chip chop chow cite city clam clap claw clay clip clod clog clop clot club clue coal coat coil coin cold come cone conk cook cool cope copy cord cork corn cost cozy crab crew crop crow cube curb cure curl curt cute czar dabs daft dame damp dare dark darn dart dash data date dawn days daze dead deaf deal dear debt deck deed deem deep deft deli dent deny desk dial dice diet dill dime dine ding dips dire dirt disc dish disk dive dock dolt dome done doom dorm dose dote dove down drab drag draw drew drip drop drum dual duel dung dupe dusk dust duty dyes each earl earn ease east easy edge edit eggs else emit envy epic even ever evil exam exit expo face fact fade fail fair fake fall fame farm fast fate fawn faze feat feed feel feet fell felt fend fern file fill film find fine fire firm fish fist flag flap flat flaw flea flew flex flip flit flog flop flow foam foil folk fond font food fool foot fore fork form fort foul fowl free frog from fuel full fume fund fuse fuss fuzz gale gall game gape garb gash gasp gate gave gawk gaze gear gent germ gift gild gill gist give glad glee glob glow glue glum gnar goad goat goes gold golf gone gore gory gown grab gram gray grew grin grip grit grow grub gulf gulp gust guts guys hack hail half hall halo halt hand hang hard hare harm harp hate have hawk haze hazy head heal heap heat heed heel heft held helm herb here hero hide high hill hint hire hiss hive hoax hock hold hole home hood hook hoop hope horn host hour huff hulk hull hump hunt hurl husk hymn icon idea idle idol inch into iris isle jack jade jail jest jilt jink join joke jolt jump junk just keen keep kick kind king knit knob knot know lace lack laid lake lamb lamp land lane lard lark lash last late laud lava lawn lazy lead leaf leak lean leap left lend lens liar lick lied life lift like lily lime limp line link lion list live load loaf lobe lode lock loft lone long look loom loop lord lore loss loud love luck lull lump lure lurk lush lust made mail main make male mall mane mare mark mars mash mask mass mast mate math maze meal mean meat meet melt memo mend menu mere mesh mild mill mime mind mine mint mire miss mist moat mode mole molt monk moon moor mope more moss most moth move much muck mule muse musk must mold bold cold colt dolt fold gilt golf gust jolt molt volt wold name navy near neck need nest news next nice nick nine node none noon norm nose note noun obey oboe odds okay once only open oral orbs over owed owls pace pack page paid pail pair pale palm pane park part pass past path pave pawn peak pear peat peel peer pelt pest pick pier pile pill pine pink pipe plan play plea plod plop plot plow plug plum plus poem poet poke pole poll pond pool pore port pose pour prey prod prop prow pull pulp pump punt pure push quit quiz race rack raft rage raid rail rain rake ramp rang rank rant rash rasp rate read real reap rein rely rend rent rest rice rich ride rife rift ring riot rise risk road roam roar robe rock rode role romp roof room root rope rose rout rove ruin rule rump rune ruse rush rust sack safe sage said sail sake salt same sand sane sang sash save seal seam sear seed seek self sell send sent shed ship shoe shop shot show shut sick sift silk sill silt sink sire site size skip skit slam slap slat sled slew slim slip slit slob slop slow slug slum slur smug snag snap snip snob snug soak sock soft soil sold sole some song soon sore sort soul soup sour span spar spin spit spot spry spur stab stag star stay stem step stew stir stop stow stub stud stun such suit sulk sung sunk sure surf swan swap swat sway swim tack tail take tale talk tall tame tang tank tart task taut taxi teal team tear tell tend tent term test that thaw them then they thin this thud tick tide tidy tied tier tile till tilt time tint tiny tire toad toil told toll tomb tone tool tops tore torn toss tour town trap tray trek trim trio trip trod true tube tuck tuft tune turf tusk twin type ugly undo upon urge used user vale vane vary vast veal veer veil vein very vest veto vice view vine void vote wade wage wait wake walk wall wand wane ward ware warm warp wart wary wave wean weed weep weld well welt went were west when whim whip whiz wide wile will wilt wind wine wing wink wire wise wish wisp woad woke wold wolf womb wood woof word work worm wove wrap wren writ yard yarn yawn year yell yeti yoga yore your yowl zeal zero zest zinc zone zoom".split(" "));
-
-// ── Helpers ────────────────────────────────────────────────────
-function getUTCDay() {
-  // Use a fixed epoch so day index is consistent globally
-  var now = new Date();
-  var epoch = new Date(Date.UTC(2025, 0, 1)); // Jan 1 2025 UTC
-  return Math.floor((now.getTime() - epoch.getTime()) / 86400000);
+const WORD_LIST = new Set("aahs aals abac abas abba abbe abbs abed abet abid able ably abos abri abut abye abys acai acca aced acer aces ache achy acid acme acne acre acta acts acyl adaw adds addy adit ados adry adze aeon aero aery aesc afar affy afro agar agas aged agee agen ager ages agha agin agio aglu agly agma agog agon ague ahed ahem ahis ahoy aias aida aide aids aiga ails aims aine ains airn airs airt airy aits aitu ajar ajee akas aked akee akes akin alae alan alap alar alas alay alba albe albs alco alec alee alef ales alew alfa alfs alga alif alit alko alky alls ally alma alme alms alod aloe aloo alow alps also alto alts alum alus amah amas ambo amen ames amia amid amie amin amir amis amla ammo amok amps amus amyl anal anan anas ance ands anes anew anga anil anis ankh anna anno anns anoa anon anow ansa anta ante anti ants anus apay aped aper apes apex apod apos apps apse apso apts aqua arak arar arba arbs arch arco arcs ards area ared areg ares aret arew arfs argh aria arid aril aris arks arle arms army arna arow arpa arse arsy arti arts arty arum arvo aryl asar asci asea ashy asks asps atap ates atma atoc atok atom atop atua auas aufs auks aula auld aune aunt aura auto aval avas avel aver aves avid avos avow away awdl awed awee awes awfy awks awls awns awny awol awry axal axed axel axes axil axis axle axon ayah ayes ayin ayre ayus azan azon azym baal baas baba babe babu baby bach back bacs bade bads bael baff baft bagh bags baht bahu bail bait baju bake bald bale balk ball balm bals balu bams banc band bane bang bani bank bans bant baps bapu barb bard bare barf bark barm barn barp bars base bash bask bass bast bate bath bats batt baud bauk baur bawd bawl bawn bawr baye bays bayt bead beak beam bean bear beat beau beck bede beds bedu beef been beep beer bees beet bego begs bein bell bels belt bema bend bene beni benj bens bent bere berg berk berm best beta bete beth bets bevy beys bhai bhat bhel bhut bias bibb bibs bice bide bidi bids bien bier biff biga bigg bigs bike bile bilk bill bima bind bine bing bink bins bint biog bios bird birk birl biro birr bise bish bisk bist bite bito bits bitt bize blab blad blae blag blah blam blat blaw blay bleb bled blee blet blew bley blin blip blit blob bloc blog blot blow blub blue blur boab boak boar boas boat boba bobs bock bode bods body boep boet boff bogs bogy boho bohs boil bois boke boko boks bola bold bole boll bolo bolt boma bomb bona bond bone bong bonk bony boob booh book bool boom boon boor boos boot bops bora bord bore bork borm born bors bort bosh bosk boss bota bote both bots bott bouk boun bout bowl bowr bows boxy boyf boyg boyo boys bozo brad brae brag brak bran bras brat braw bray bred bree brei bren brer brew brey brie brig brik brim brin brio bris brit brod brog broo bros brow brrr brus brut brux buat buba bubo bubs bubu buck buda budi budo buds buff bufo bugs buhl buhr buik buke bulb bulk bull bumf bump bums buna bund bung bunk bunn buns bunt buoy bura burb burd burg burk burl burn burp burr burs bury bush busk buss bust busy bute buts butt buys buzz byde byes byke byre byrl byte caas caba cabs caca cack cade cadi cads cafe caff cage cags cagy caid cain cake caky calf calk call calm calo calp calx cama came camo camp cams cane cang cann cans cant cany capa cape caph capi capo caps carb card care cark carl carn carp carr cars cart casa case cash cask cast cate cats cauf cauk caul caum caup cava cave cavy cawk caws cays ceas ceca cede cedi cees ceil cell cels celt cens cent cepe ceps cere cero cert cess cete chad chai chal cham chao chap char chas chat chav chaw chay chef cher chew chez chia chib chic chid chik chin chip chis chit chiv chiz choc chog chon chop chou chow chub chug chum chur chut ciao cide cids ciel cigs cill cine cion cire cirl cist cite cito cits city cive clad clag clam clan clap clat claw clay clef cleg clem clew clip clit clod clog clon clop clot clou clow cloy club clue coal coat coax cobb cobs coca coch cock coco coda code cods coed coff coft cogs coho coif coil coin coir coit coke coky cola cold cole coll cols colt coly coma comb come comm comp coms cond cone conf coni conk conn cons cony coof cook cool coom coon coop coos coot cope cops copy cord core corf cork corm corn cors cory cose cosh coss cost cosy cote coth cots cott coup cour cove cowk cowl cowp cows cowy coxa coxy coys coze cozy crab crag cram cran crap craw cray cred cree crem crew cria crib crim cris crit croc crog crop crow crud crue crus crux cube cubs cuds cued cues cuff cuif cuit cuke cull culm cult cums cunt cups curb curd cure curf curl curn curr curs curt cush cusk cusp cuss cute cuts cwms cyan cyma cyme cyst cyte czar daal dabs dace dack dada dado dads daes daff daft dago dags dahl dahs dais daks dale dali dals dalt dame damn damp dams dang dank dans dant daps darb dare darg dari dark darn dart dash data date dato daub daud daur daut davy dawd dawk dawn daws dawt days daze dead deaf deal dean dear deaw debe debs debt deck deco deed deek deem deen deep deer dees deet deev defi defo deft defy degs degu deid deif deil deke dele delf deli dell delo dels delt deme demo demy dene deni dens dent deny dere derm dern dero derv desi desk deus deva devs dews dewy dexy deys dhak dhal dhol dhow dial dibs dice dich dick dict dido didy dieb died diel dies diet diff difs digs dika dike dill dime dimp dims dine ding dink dino dins dint diol dips dipt dire dirk dirl dirt disa disc dish disk diss dita dite dits ditt ditz diva dive divi divo divs dixi dixy diya djin doab doat dobs doby dock doco docs dodo dods doek doen doer does doff doge dogs dogy dohs doit dojo dole doll dols dolt dome doms domy dona done dong dons doob dook dool doom doon door doos dopa dope dops dopy dorb dore dork dorm dorp dorr dors dort dory dose dosh doss dost dote doth dots doty douc douk doum doun doup dour dout doux dove dowd dowf dowl down dowp dows dowt doxy doys doze dozy drab drac drad drag dram drap drat draw dray dree dreg drek drew drey drib drip drop drow drub drug drum drys dsos duad dual duan duar dubs duce duci duck duct dude duds dued duel dues duet duff dugs duit duka duke dule dull duly duma dumb dump dune dung dunk duns dunt duos dupe dups dura dure durn duro durr dush dusk dust duty dwam dyad dyed dyer dyes dyke dyne dzho dzos each eale eans eard earl earn ears ease east easy eath eats eaus eaux eave ebbs ebon ecad ecce ecco eche echo echt ecod ecos ecru ecus eddo eddy edge edgy edhs edit eech eels eely eery eevn effs efts egad egal eger eggs eggy egis egma egos ehed eide eiks eild eina eine eish eked ekes ekka elan elds elfs elhi elks ells elms elmy else elts emes emeu emfs emic emir emit emma emmy emos empt emus emyd emys ends enes enew engs enol enow enuf envy eoan eons eorl epee epha epic epos eras ered eres erev ergo ergs erhu eric erks erne erns eros errs erst eruv eses esky esne espy esse ests etas etat etch eten ethe eths etic etna etui euge eugh euks euoi euro even ever eves evet evil evoe evos ewer ewes ewks ewts exam exec exed exes exit exon expo exul eyas eyed eyen eyer eyes eyne eyot eyra eyre eyry faan faas fabs face fact fade fado fads fady faff fags fahs faik fail fain fair faix fake fall falx fame fand fane fang fank fano fans fard fare farl farm faro fars fart fash fast fate fats faun faur faut faux fava fave fawn faws fays faze feal fear feat feck feds feeb feed feel feen feer fees feet fegs fehm fehs feis fell felt feme fems fend feni fens fent feod fere ferm fern fess fest feta fete fets fett feud feus fews feys fiar fiat fibs fice fico fido fids fief fier fife figo figs fike fiky fila file fill film filo fils find fine fini fink fino fins fiqh fire firk firm firn firs fisc fish fisk fist fits fitt five fixt fizz flab flag flak flam flan flap flat flaw flax flay flea fled flee fleg flew flex fley flic flim flip flir flit flix flob floc floe flog flop flor flow flox flub flue flus flux foal foam fobs foci foen foes fogs fogy fohn foid foil foin fold folk fond fone fons font food fool foot fops fora forb ford fore fork form fort foss foud foul four fous fowl foxy foys fozy frab frae frag frap fras frat frau fray free fret frib frig fris frit friz froe frog from fros frow frug fubs fuci fuck fuds fuel fuff fugs fugu fuji full fume fums fumy fund fung funk funs furl furr furs fury fusc fuse fuss fust futz fuze fuzz fyce fyke fyle fyrd gabs gaby gade gadi gads gaed gaen gaes gaff gaga gage gags gaid gain gair gait gajo gaks gala gale gall gals gama gamb game gamp gams gamy gane gang gans gant gaol gape gapo gaps gapy garb gare gari gars gart gash gasp gast gate gath gats gaud gaum gaun gaup gaur gaus gave gawd gawk gawp gaws gays gaze gazy geal gean gear geat geck geds geed geek geep gees geez geit geld gels gelt gems gena gene gens gent genu geos gere germ gers gert gest geta gets geum ghat ghee ghis gibe gibs gids gied gien gies gift giga gigs gila gild gill gilt gimp ging gink ginn gins gios gips gird girl girn giro girr girt gism gist gite gits give gizz gjus glad glam gled glee gleg glei glen gley glia glib glid glim glit glob glom glop glow glue glug glum glut gnar gnat gnaw gnow gnus goad goaf goal goas goat gobi gobo gobs goby gods goel goer goes goey goff gogo goji gold gole golf golp gone gong gonk gons good goof goog gook gool goon goop goor goos gora gore gori gorm gorp gory gosh goss goth gouk gout govs gowd gowf gowk gowl gown goys grab grad gram gran grat grav gray gree gren grew grex grey grid grig grim grin grip gris grit grog grok grot grow grrl grub grue grum guan guar gubs guck gude gues guff guga guid gula gule gulf gull gulp guls guly gump gums gung gunk guns gups gurl gurn gurs guru gush gust guts guvs guys gyal gybe gymp gyms gyny gyps gyre gyri gyro gyte gyve haaf haar habu hack hade hadj hads haed haem haen haes haet haff haft hagg hags haha hahs haik hail hain hair haji hajj haka hake haku hale half hall halm halo halt hame hams hand hang hank hant haos haps hapu hard hare hark harl harm harn haro harp hart hash hask hasp hass hast hate hath hats haud hauf haul haut have hawk hawm haws hays haze hazy head heal heap hear heat hebe hech heck heed heel heft hehs heid heil heir held hele hell helm helo help heme hemp hems hend hens hent heps hept herb herd here herl herm hern hero hers hery hesp hest hete heth hets hewn hews heys hick hide hied hies high hike hila hild hili hill hilt hims hind hing hins hint hioi hips hipt hire hish hisn hiss hist hits hive hiya hizz hoar hoas hoax hobo hobs hock hods hoed hoer hoes hogg hogh hogs hoha hohs hoik hoka hoke hoki hold hole holk holm holp hols holt holy homa home homo homs homy hond hone hong honk hons hood hoof hook hoon hoop hoor hoot hope hops hora hore hori horn hors hose hoss host hote hots houf hour hout hove howe howf howk howl hows hoya hoys hubs huck hued huer hues huff huge hugs hugy huhu huia huic huis hula hule hulk hull huma humf hump hums hung hunh hunk huns hunt hups hurl hurt hush husk huso huss huts hwan hwyl hyed hyen hyes hyke hyla hyle hymn hype hypo hyps hyte iamb ibex ibis iced icer ices ichs icky icon idea idee idem ides idle idly idol idyl iffy igad iggs iglu ikan ikat ikon ilea ilex ilia ilka ilks ills illy imam imid immy impi imps inby inch info ingo ings inia inks inky inly inns inro inti into ions iota ired ires irid iris irks iron isba isit isle isms isna isos itas itch item iure iwis ixia izar jaap jabs jack jade jafa jaga jagg jags jail jake jaks jamb jams jane jann jape japs jark jarl jarp jars jasp jass jasy jato jauk jaup java jaws jaxy jays jazy jazz jean jeat jedi jeed jeel jeep jeer jees jeez jefe jeff jehu jell jeon jerk jess jest jete jets jeux jews jiao jibb jibe jibs jiff jigs jill jilt jimp jink jinn jins jinx jird jism jive jivy jizz jobe jobs jock joco joes joey jogs john join joke joky jole joll jols jolt jomo jong jook jors josh joss jota jots jouk jour jowl jows joys juba jube juco judo juds judy juga jugs juju juke juku jump junk jupe jura jure jury just jute juts juve jynx kaal kaas kabs kack kade kadi kaed kaes kafs kago kagu kaid kaie kaif kaik kail kaim kain kais kaka kaki kaks kale kali kama kame kami kana kane kang kans kant kaon kapa kaph kara kark karn karo kart kata kati kats kava kawa kaws kayo kays kazi kbar keas kebs keck keds keef keek keel keen keep keet kefs kegs keir keks kell kelp kelt kemb kemp keno kens kent kepi keps kept kerb kerf kern kero kesh kest keta kete keto kets kewl keys khaf khan khat khet khis khor khud kibe kick kids kief kier kiev kiff kifs kike kild kill kiln kilo kilp kilt kina kind kine king kink kino kins kipe kipp kips kirk kirn kirs kish kiss kist kite kith kits kiva kiwi klap klik knag knap knar knee knew knit knob knop knot know knub knur knut koan koap koas kobo kobs koel koff koha kohl kois koji koka kola kolo kond konk kons kook koph kops kora kore koro kors koru koss koto kows krab kris ksar kudo kudu kueh kues kufi kuia kuku kula kuna kune kuri kuru kuta kuti kutu kuzu kvas kyak kyar kyat kybo kyes kyle kynd kyne kype kyte kyus labs lace lack lacs lacy lade lads lady laer lags lahs laic laid laik lain lair lake lakh laky lall lama lamb lame lamp lams lana land lane lang lank lant lanx laps lard lare lari lark larn lars lase lash lass last late lath lati lats latu laud lauf lava lave lavs lawk lawn laws lays laze lazo lazy lead leaf leak leal leam lean leap lear leas leat lech leed leek leep leer lees leet left legs lehr leir leis leke leks leku leme lend leng leno lens lent leps lept lere lerp less lest lets leud leva leve levo levy lewd leys lezz liar lias libs lice lich lick lido lids lied lief lien lier lies lieu life lift ligs like lill lilo lilt lily lima limb lime limn limo limp limy lind line ling link linn lino lins lint liny lion lipa lipe lipo lips lira lire liri lirk lisk lisp list lite lith lits litu live load loaf loam loan lobe lobi lobo lobs loca loch loci lock loco lode lods loft loge logo logs logy loid loin loir loke loll loma lome lone long loof look loom loon loop loor loos loot lope lops lord lore lorn lory lose losh loss lost lota lote loth loti loto lots loud loun loup lour lous lout love lowe lown lowp lows lowt loys luau lube luce luck lude ludo luds lues luff luge lugs luit luke lull lulu luma lump lums luna lune lung lunk lunt luny lure lurk lurs lush lusk lust lute lutz luvs luxe lwei lyam lych lyes lyme lyms lyne lynx lyra lyre lyse lyte maar maas mabe mace mach mack macs made mads maes mage magg magi mags maha maid maik mail maim main mair make maki mako maks mala male mali mall malm mals malt mama mams mana mand mane mang mani mano mans many maps mara marc mard mare marg mark marl marm mars mart mary masa mase mash mask mass mast masu mate math mats matt maty maud maul maun maut mawk mawn mawr maws maxi maya mayo mays maze mazy mead meal mean meat meck meds meed meek meer mees meet meff mega megs mein mela meld mell mels melt meme memo mems mend mene meng meno ment menu meou meow merc mere meri merk merl mesa mese mesh mess meta mete meth mets meus meve mewl mews meze mezz mhos mibs mica mice mich mick mico mics midi mids mien miff migg migs miha mihi mike mild mile milf milk mill milo mils milt mime mina mind mine ming mini mink mino mint minx miny mips mire miri mirk miro mirs mirv miry mise miso miss mist mite mitt mity mixt mixy mizz mnas moai moan moas moat mobe mobs moby moch mock mocs mode modi mods moer moes mofo mogs mohr moil moit mojo moke moki moko mola mold mole moll mols molt moly mome momi moms mona mong monk mono mons mony mood mooi mook mool moon moop moor moos moot mope mops mopy mora more morn mors mort mose mosh mosk moss most mote moth moti mots mott motu moue moup mous move mowa mown mows moxa moya moyl moys moze mozo mozz much muck muds muff mugg mugs muid muil muir mule mull mumm mump mums mumu mung muni muns munt muon mura mure murk murl murr muse mush musk muso muss must mute muti muts mutt muzz mwah myal mycs myna myth myxo mzee naam naan nabe nabk nabs nach nada nads naff naga nags naif naik nail nain nala name nams namu nana nane nang nans naoi naos napa nape naps narc nard nare nark nary nats nave navy nays naze nazi neal neap near neat nebs neck neds need neem neep nefs negs neif neks nema nemn nene neon neps nerd nerk nesh ness nest nete nets nett neuk neum neve nevi news newt next ngai nibs nice nick nide nidi nids nied nief nies nife niff nigh nill nils nimb nims nine nipa nips nirl nish nisi nite nits nixe nixy noah nobs nock node nodi nods noel noes nogg nogs noil noir nole noll nolo noma nome noms nona none nong noni noob nook noon noop nope nori nork norm nose nosh nosy nota note nott noul noun noup nous nout nova nowl nown nows nowt nowy noys nubs nude nuff nuke null numb nuns nurd nurl nurr nurs nuts nyas nyed nyes oafs oaks oaky oars oary oast oath oats oaty obas obes obey obia obis obit oboe obol obos ocas occy oche octa odah odal odas odds odea odes odic odor odso odyl ofay offs offy ogam ogee ogle ogre ohed ohia ohms oiks oils oily oink oint okas okay okeh okes okra okta olde olds oldy olea oleo oles olid olio olla olms olpe ombu omen omer omit omov once oner ones onie only onos onst onto onus onyx oofs oofy oohs ooms oons oont oops oose oosy oots ooze oozy opah opal oped open opes oppo opts opus orad oral orbs orby orca orcs ordo ords ores orfe orfs orgy orle orra orts oryx orzo osar oses ossa otic otto ouch ouds ouks ould oulk ouma oupa ouph oups ourn ours oust outs ouzo oval ovel oven over ovum owed ower owes owls owly owns owre owse owts oxen oxer oxes oxid oxim oyer oyes oyez paal paan paca pace pack paco pacs pact pacy padi pads page pahs paid paik pail pain pair pais pale pall palm palp pals paly pams pand pane pang pans pant papa pape paps para pard pare park parp parr pars part pase pash pass past pate path pats patu paty paua paul pave pavs pawa pawk pawl pawn paws pays peag peak peal pean pear peas peat peba pech peck pecs peds peed peek peel peen peep peer pees pegh pegs pehs pein peke pela pele pelf pell pels pelt pend pene peni penk pens pent peon pepo peps pere peri perk perm pern perp pert perv peso pest pets pews pfft pfui phat phew phis phiz phoh phon phos phot phut pial pian pias pica pice pick pics pied pier pies piet pigs pika pike piki pila pile pili pill pily pima pimp pina pine ping pink pins pint piny pion pioy pipa pipe pipi pips pipy pirl pirn pirs pise pish piso piss pita pith pits pity pium pixy pize plan plap plat play plea pleb pled plew plex plie plim plod plop plot plow ploy plue plug plum plus poas pock poco pods poem poep poet pogo pogy pois poke poky pole polk poll polo pols polt poly pome pomo pomp poms pond pone pong ponk pons pont pony pood poof pooh pook pool poon poop poor poos poot pope pops pore pork porn port pory pose posh poss post posy pote pots pott pouf pouk pour pout pown pows poxy pozz prad pram prao prat prau pray pree prem prep prex prey prez prig prim proa prob prod prof prog prom proo prop pros prow pruh prys psis psst ptui pube pubs puce puck puds pudu puer puff pugh pugs puha puir puja puka puke puku puky pula pule puli pulk pull pulp puls pulu puly puma pump pumy puna pung punk puns punt puny pupa pups pupu pure puri purl purr purs push puss puts putt putz puys pyas pyat pyes pyet pyic pyin pyne pyot pyre pyro qadi qaid qats qins qoph quad quag quai quat quay quep quey quid quim quin quip quit quiz quod quop rabi raca race rach rack racy rade rads raff raft raga rage ragg ragi rags ragu rahs raia raid raik rail rain rais rait raja rake raki raku rale rami ramp rams rana rand rang rani rank rant rape raps rapt rare rark rase rash rasp rast rata rate rath rato rats ratu raun rave ravs rawn raws raya rays raze razz read reak real ream rean reap rear rebs reck recs redd rede redo reds reed reef reek reel reen rees refs reft rego regs rehs reif reik rein reis reke rely rems rend renk rens rent reny reos repo repp reps resh rest rete rets revs rews rhea rhos rhus riad rial rias riba ribs rice rich rick ricy ride rids riel riem rife riff rifs rift rigg rigs rile rill rima rime rims rimu rimy rind rine ring rink rins riot ripe ripp rips ript rise risk risp rite rits ritt ritz riva rive rivo riza road roam roan roar robe robs roch rock rocs rode rods roed roes roil roin roji roke roks roky role rolf roll roma romp roms rone rong ront ronz rood roof rook room roon roop roos root rope ropy rore rort rory rose rost rosy rota rote roti rotl roto rots roue roul roum roup rout roux rove rows rowt rube rubs ruby ruck rucs rudd rude ruds rued ruer rues ruff ruga rugs ruin rukh rule ruly rume rump rums rund rune rung runs runt rurp ruru rusa ruse rush rusk rust ruth ruts ryal ryas ryes ryfe ryke rynd ryot rype saag sabe sabs sack sacs sade sadi sado sads safe saft saga sage sago sags sagy saic said sail saim sain sair sais sake saki sale sall salp sals salt sama same samp sams sand sane sang sank sans sant saps sard sari sark sars sash sass sate sati saul saut save savs sawn saws saxe says scab scad scag scam scan scar scat scaw scog scop scot scow scry scud scug scul scum scup scur scut scye seal seam sean sear seas seat sech seco secs sect seed seek seel seem seen seep seer sees sego segs seif seik seil seir seis sekt seld sele self sell sels seme semi sena send sene sens sent seps sept sera sere serf serk serr sers sese sesh sess seta sets sett sewn sews sext sexy seys shad shag shah sham shan shat shaw shay shea shed shes shet shew shim shin ship shir shit shiv shmo shod shoe shog shoo shop shot show shri shul shun shut shwa sial sibb sibs sice sich sick sics sida side sidh sien sies sift sigh sign sijo sika sike sild sile silk sill silo silt sima simi simp sims sind sine sing sinh sink sins sipe sips sire siri sirs siss sist site sith sits sitz size sizy sjoe skag skas skat skaw skee skeg sken skeo skep sker sket skew skid skim skin skio skip skis skit skol skry skua skug skyf skyr slab slae slag slam slap slat slaw slay sleb sled slee slew sley slid slim slip slit slob sloe slog slop slot slow slub slue slug slum slur slut smee smew smir smit smog smug smur smut snab snag snap snar snaw sneb sned snee snib snig snip snit snob snod snog snot snow snub snug snye soak soap soar soba sobs soca sock socs soda sods sofa soft sogs soho sohs soil soja soke sola sold sole soli solo sols soma some soms somy sone song sons sook sool soom soon soop soot soph sops sora sorb sord sore sori sorn sort soss soth sots souk soul soum soup sour sous sout sovs sowf sowl sowm sown sowp sows soya soys spae spag spam span spar spas spat spaw spay spaz spec sped spek spet spew spic spie spif spik spim spin spit spiv spod spot spry spud spue spug spun spur sris stab stag stap star stat staw stay sted stem sten step stet stew stey stie stim stir stoa stob stop stot stow stub stud stum stun stye suba subs such suck sudd suds sued suer sues suet sugh sugo sugs suid suit sukh suks sulk sulu sumo sump sums sumy sung suni sunk sunn suns supe sups suqs sura surd sure surf suss susu swab swad swag swam swan swap swat sway swee swey swig swim swiz swob swop swot swum sybo syce syed syen syes syke syli sync synd syne sype syph taal tabi tabs tabu tace tach tack taco tact tads taed tael taes tags taha tahr taig tail tain tais tait taka take taki taks taky tala talc tale tali talk tall tame tamp tams tana tane tang tanh tank tans taos tapa tape taps tapu tara tare tarn taro tarp tars tart tash task tass tate tath tats tatt tatu taus taut tava tavs tawa taws tawt taxa taxi tays tead teak teal team tear teas teat tech tecs teds tedy teed teek teel teem teen teer tees teff tefs tegg tegs tegu tehr teil tein tela teld tele tell tels telt teme temp tems tend tene tens tent tepa terf term tern test tete teth tets tews text thae than thar that thaw thee them then thew they thig thin thio thir this thon thou thro thru thud thug thus tian tiar tice tich tick tics tide tids tidy tied tier ties tiff tift tige tigs tika tike tiki tiks tile till tils tilt time tina tind tine ting tink tins tint tiny tipi tips tipt tire tirl tiro tirr tite titi tits tivy tizz toad toby tock toco tocs tods tody toea toed toes toey toff toft tofu toga toge togs toho toil toit toke toko tola told tole toll tolt tolu tomb tome tomo toms tone tong tonk tons tony took tool toom toon toot tope toph topi topo tops tora torc tore tori torn toro torr tors tort tory tosa tose tosh toss tost tote tots touk toun tour tout town tows towt towy toyo toys toze trad tram trap trat tray tree tref trek tres tret trew trey trez trie trig trim trin trio trip trod trog tron trop trot trow troy true trug trye tryp tsar tsks tuan tuba tube tubs tuck tufa tuff tuft tugs tuis tule tump tums tuna tund tune tung tuns tuny tups turd turf turk turm turn tush tusk tuts tutu tuzz twae twal twas twat tway twee twig twin twit twos tyde tyed tyee tyer tyes tygs tyin tyke tymp tynd tyne type typo typp typy tyre tyro tyte tzar udal udon udos ueys ufos ughs ugly ukes ulan ules ulex ulna ulus ulva umbo umma umph umps umpy umra umus unai unau unbe unce unci unco unde undo undy unis unit unto upas upby updo upgo upon upsy upta urao urbs urde urds urdy urea ures urge uric urns urps ursa urus urva used user uses utas utes utis utus uvae uvas uvea vacs vade vaes vagi vags vail vain vair vale vali vamp vane vang vans vant vara vare vars vary vasa vase vast vats vatu vaus vaut vavs vaws veal veep veer vees vega vego vehm veil vein vela veld vele vell vena vend vent vera verb verd vers vert very vest veto vets vext viae vial vias vibe vibs vice vide vids vied vier vies view viga vigs vild vile vill vims vina vine vino vins vint viny viol vire virl visa vise vita vite viva vive vivo vizy vlei vlog voar voes void voip vola vole volk vols volt vors vote vows vril vrot vrou vrow vugg vugh vugs vuln vums waac wabs wack wadd wade wadi wads wadt wady waes waff waft wage wags waid waif wail wain wair wais wait waka wake wakf wald wale wali walk wall waly wame wand wane wang wank wans want wany waps waqf warb ward ware wark warm warn warp wars wart wary wase wash wasp wast wate wats watt wauk waul waur wave wavy wawa wawe wawl waws waxy ways weak weal wean wear webs weds weed week weel weem ween weep weer wees weet weft weid weil weir weka weld welk well wels welt wemb wems wena wend wens went wept were wero wert west weta wets wexe weys whae wham whap what whee when whet whew whey whid whig whim whin whio whip whir whit whiz whoa whom whop whot whow whup whys wice wich wick wide wiel wife wigs wiki wild wile wili will wilt wily wimp wind wine wing wink winn wino wins winy wipe wire wiry wise wish wisp wiss wist wite with wits wive woad wock woes wofs wogs woke woks wold wolf womb wonk wons wont wood woof wool woon woos woot wops word wore work worm worn wort wost wots wove wowf wows wrap wren writ wuds wudu wull wuss wych wyes wyle wynd wynn wyns wyte xray xyst yaar yaba yack yads yaff yagi yags yahs yaks yald yale yams yang yank yapp yaps yard yare yark yarn yarr yate yaud yaup yawl yawn yawp yaws yawy yays ybet yead yeah yean year yeas yebo yech yede yeed yegg yeld yelk yell yelm yelp yelt yens yeps yerd yerk yesk yest yeti yett yeuk yeve yews ygoe yids yike yill yins yipe yips yird yirk yirr yite ylem ylke ympe ympt yobs yock yode yodh yods yoga yogh yogi yoke yoks yold yolk yomp yond yoni yont yoof yoop yore york yorp youk your yous yowe yowl yows yoyo yuan yuca yuch yuck yuft yuga yugs yuke yuko yuks yuky yule yump yunx yups yurt yutz yuzu ywis zack zags zany zaps zarf zari zati zeal zeas zebu zeds zees zein zeks zels zeps zerk zero zest zeta zeze zhos ziff zigs zila zill zimb zinc zine zing zins zips zite ziti zits zizz zobo zobu zoea zoic zols zona zone zonk zoom zoon zoos zoot zori zouk zulu zupa zurf zyga zyme zzzs".split(" "));
+function getPuzzleIndex(offsetDays = 0) {
+  const now = new Date();
+  return Math.floor((now.getTime() - EPOCH.getTime()) / 86400000) + offsetDays;
 }
-function getDailyPair() {
-  return WORD_PAIRS[getUTCDay() % WORD_PAIRS.length];
+function getPairForIndex(idx) {
+  return WORD_PAIRS[(idx % WORD_PAIRS.length + WORD_PAIRS.length) % WORD_PAIRS.length];
 }
-function getTodayKey() {
-  var now = new Date();
-  return "ladder-best-".concat(now.getUTCFullYear(), "-").concat(now.getUTCMonth(), "-").concat(now.getUTCDate());
+function getBestKey(idx) {
+  return `worder-best-${idx}`;
+}
+function getMovesKey(idx) {
+  return `worder-moves-${idx}`;
 }
 function getCountdown() {
-  var now = new Date();
-  var tom = new Date(now);
-  tom.setHours(24, 0, 0, 0);
-  var diff = tom - now;
-  var h = String(Math.floor(diff / 3600000)).padStart(2, "0");
-  var m = String(Math.floor(diff % 3600000 / 60000)).padStart(2, "0");
-  var s = String(Math.floor(diff % 60000 / 1000)).padStart(2, "0");
-  return "".concat(h, ":").concat(m, ":").concat(s);
+  const now = new Date();
+  const tom = new Date(now);
+  tom.setUTCHours(24, 0, 0, 0);
+  const diff = tom - now;
+  const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
+  const m = String(Math.floor(diff % 3600000 / 60000)).padStart(2, "0");
+  const s = String(Math.floor(diff % 60000 / 1000)).padStart(2, "0");
+  return `${h}:${m}:${s}`;
 }
 function letterDiff(a, b) {
-  var d = 0;
-  for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
   return d;
 }
 function diffPositions(a, b) {
-  var pos = [];
-  for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) pos.push(i);
-  return pos;
+  const p = [];
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) p.push(i);
+  return p;
 }
 function loadStats() {
   try {
@@ -184,7 +81,7 @@ function loadStats() {
       totalSteps: 0,
       lastWinDate: null
     };
-  } catch (_unused) {
+  } catch {
     return {
       played: 0,
       wins: 0,
@@ -198,75 +95,54 @@ function loadStats() {
 function saveStats(s) {
   localStorage.setItem(STATS_KEY, JSON.stringify(s));
 }
-function isRealWord(_x) {
-  return _isRealWord.apply(this, arguments);
-} // ── Confetti ───────────────────────────────────────────────────
-function _isRealWord() {
-  _isRealWord = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(word) {
-    var res, _t;
-    return _regenerator().w(function (_context2) {
-      while (1) switch (_context2.p = _context2.n) {
-        case 0:
-          if (!WORD_LIST.has(word.toLowerCase())) {
-            _context2.n = 1;
-            break;
-          }
-          return _context2.a(2, true);
-        case 1:
-          _context2.p = 1;
-          _context2.n = 2;
-          return fetch("https://api.dictionaryapi.dev/api/v2/entries/en/".concat(word.toLowerCase()));
-        case 2:
-          res = _context2.v;
-          return _context2.a(2, res.ok);
-        case 3:
-          _context2.p = 3;
-          _t = _context2.v;
-          return _context2.a(2, false);
-      }
-    }, _callee2, null, [[1, 3]]);
-  }));
-  return _isRealWord.apply(this, arguments);
+async function isRealWord(word) {
+  if (WORD_LIST.has(word.toLowerCase())) return true;
+  try {
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
-function Confetti(_ref) {
-  var active = _ref.active;
-  var canvasRef = useRef(null);
-  var rafRef = useRef(null);
-  var particles = useRef([]);
-  useEffect(function () {
+
+// ── Confetti ─────────────────────────────────────────────────────
+function Confetti({
+  active
+}) {
+  const canvasRef = useRef(null);
+  const rafRef = useRef(null);
+  useEffect(() => {
     if (!active) return;
-    var canvas = canvasRef.current;
+    const canvas = canvasRef.current;
     if (!canvas) return;
-    var ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    particles.current = Array.from({
+    const particles = Array.from({
       length: 160
-    }, function () {
-      return {
-        x: Math.random() * canvas.width,
-        y: -10 - Math.random() * 200,
-        r: 5 + Math.random() * 7,
-        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-        vx: (Math.random() - 0.5) * 4,
-        vy: 3 + Math.random() * 5,
-        rot: Math.random() * Math.PI * 2,
-        rotV: (Math.random() - 0.5) * 0.2,
-        shape: Math.random() > 0.5 ? "rect" : "circle",
-        w: 8 + Math.random() * 10,
-        h: 4 + Math.random() * 6,
-        alpha: 1
-      };
-    });
+    }, () => ({
+      x: Math.random() * canvas.width,
+      y: -10 - Math.random() * 200,
+      r: 5 + Math.random() * 7,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      vx: (Math.random() - .5) * 4,
+      vy: 3 + Math.random() * 5,
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - .5) * .2,
+      shape: Math.random() > .5 ? "rect" : "circle",
+      w: 8 + Math.random() * 10,
+      h: 4 + Math.random() * 6,
+      alpha: 1
+    }));
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      var alive = false;
-      particles.current.forEach(function (p) {
+      let alive = false;
+      particles.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.12;
+        p.vy += .12;
         p.rot += p.rotV;
-        if (p.y > canvas.height * 0.7) p.alpha -= 0.018;
+        if (p.y > canvas.height * .7) p.alpha -= .018;
         if (p.alpha > 0) alive = true;
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.alpha);
@@ -280,12 +156,10 @@ function Confetti(_ref) {
         }
         ctx.restore();
       });
-      if (alive) rafRef.current = requestAnimationFrame(draw);else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (alive) rafRef.current = requestAnimationFrame(draw);
     }
     rafRef.current = requestAnimationFrame(draw);
-    return function () {
-      return cancelAnimationFrame(rafRef.current);
-    };
+    return () => cancelAnimationFrame(rafRef.current);
   }, [active]);
   return /*#__PURE__*/React.createElement("canvas", {
     ref: canvasRef,
@@ -298,110 +172,606 @@ function Confetti(_ref) {
     }
   });
 }
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 
-// ── Main App ───────────────────────────────────────────────────
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111;
+    --surface2: #181818;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.1);
+    --text: #f0ede8;
+    --muted: #4a4a4a;
+    --muted2: #666;
+    --accent: #c8b89a;
+    --accent2: #8a7560;
+    --green: #4a9e6e;
+    --green-soft: rgba(74,158,110,0.15);
+    --red: #c0594a;
+    --tile-size: 54px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; background: var(--bg); }
+  body { font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--bg); }
+
+  .app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px 80px;
+    user-select: none;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 28px 0 0;
+    margin-bottom: 2px;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    color: var(--text);
+      }
+  .header-icons { display: flex; gap: 2px; position: absolute; right: 0; }
+  .icon-btn {
+    background: none; border: none;
+    color: var(--muted); font-size: 16px;
+    cursor: pointer; padding: 6px 8px;
+    border-radius: 8px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .icon-btn:hover { color: var(--text); background: var(--surface2); }
+
+  /* ── Meta row ── */
+  .puzzle-label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 6px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .puzzle-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .sub-label {
+    font-size: 11px;
+    font-weight: 300;
+    color: var(--muted2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .archive-playing { display: flex; align-items: center; gap: 10px; color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .back-today-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted2);
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .back-today-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Grid ── */
+  .grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+    width: 100%;
+  }
+  .grid-row { display: flex; justify-content: center; gap: 5px; }
+  .tiles { display: flex; gap: 5px; justify-content: center; }
+
+  .tile {
+    width: var(--tile-size);
+    height: var(--tile-size);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+  }
+  .tile.anchor-start { background: #2a2060; border: 1px solid rgba(160,140,255,0.3); color: #c4baf5; }
+  .tile.anchor-end   { background: #0f2e1e; border: 1px solid rgba(74,158,110,0.35); color: #7ecba0; }
+  .tile.filled       { }
+  .tile.changed      { outline: 2px solid rgba(255,255,255,0.25); outline-offset: 1px; }
+
+  /* cursor */
+  .cursor-tile {
+    width: var(--tile-size);
+    height: var(--tile-size);
+    border-radius: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    flex-shrink: 0;
+    transition: border-color 0.1s;
+  }
+  .cursor-tile.lit { border-color: rgba(255,255,255,0.2); }
+  .cursor-tile.caret::after {
+    content: '';
+    display: inline-block;
+    width: 1.5px;
+    height: 20px;
+    background: var(--accent);
+    animation: blink 1.1s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .hidden-input { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; border: none; outline: none; background: transparent; color: transparent; caret-color: transparent; font-size: 16px; }
+
+  .shake { animation: shake 0.3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* ── Feedback ── */
+  .feedback-bar {
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--red);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .feedback-bar.loading { color: var(--muted2); }
+
+  /* ── Submit ── */
+  .submit-btn {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 13px 36px;
+    cursor: pointer;
+    margin-bottom: 28px;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .submit-btn:hover:not(:disabled) { opacity: 0.88; }
+  .submit-btn:active:not(:disabled) { transform: scale(0.97); }
+  .submit-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+  /* ── Countdown ── */
+  .countdown-pill {
+    font-size: 11px;
+    font-weight: 300;
+    color: var(--muted2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .countdown-pill strong {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--muted2);
+    font-style: normal;
+  }
+
+  /* ── Ad & Footer ── */
+  .ad-slot { width: 100%; margin: 8px 0; text-align: center; min-height: 60px; }
+  .ad-label { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .footer-links { font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; letter-spacing: 0.04em; }
+
+  /* ── Win overlay ── */
+  .win-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 150;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+  .win-box {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 44px 36px 36px;
+    text-align: center;
+    max-width: 360px;
+    width: 92%;
+    animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)} }
+  .win-emoji { font-size: 44px; margin-bottom: 16px; }
+  .win-title { font-family: 'DM Serif Display', serif; font-size: 32px; font-weight: 400; margin-bottom: 6px; }
+  .win-sub { font-size: 11px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 32px; }
+  .win-stats { display: flex; justify-content: center; gap: 44px; margin-bottom: 24px; }
+  .win-stat { text-align: center; }
+  .win-stat-val { font-family: 'DM Serif Display', serif; font-size: 44px; font-weight: 400; color: var(--green); line-height: 1; }
+  .win-stat-lbl { font-size: 9px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 6px; }
+  .win-record { font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 24px; }
+  .win-actions { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .try-again-btn {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--muted2);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 11px 22px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .try-again-btn:hover { border-color: var(--text); color: var(--text); }
+  .whatsapp-btn {
+    background: #25D366; color: #fff; border: none;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 11px 18px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .whatsapp-btn:hover { opacity: 0.88; }
+
+  /* ── Modals ── */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 32px 28px;
+    max-width: 360px;
+    width: 92%;
+    position: relative;
+  }
+  .modal h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px; font-weight: 400;     margin-bottom: 12px;
+  }
+  .modal p { font-size: 13px; font-weight: 300; color: var(--muted2); line-height: 1.7; margin-bottom: 10px; }
+  .modal-example { display: flex; flex-direction: column; gap: 5px; margin: 16px 0; }
+  .ex-row { display: flex; gap: 5px; align-items: center; }
+  .ex-tile { width: 42px; height: 42px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: #fff; }
+  .ex-tile.changed-ex { outline: 2px solid rgba(255,255,255,0.3); outline-offset: 1px; }
+  .ex-label { font-size: 10px; color: var(--muted); margin-left: 10px; letter-spacing: 0.04em; }
+  .modal-close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none; color: var(--muted);
+    font-size: 20px; cursor: pointer; line-height: 1;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; transition: all 0.15s;
+  }
+  .modal-close:hover { color: var(--text); background: var(--surface2); }
+
+  /* ── Stats ── */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 20px 0; }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 12px;
+    text-align: center;
+  }
+  .stat-box-val { font-family: 'DM Serif Display', serif; font-size: 34px; font-weight: 400; color: var(--text); line-height: 1; }
+  .stat-box-val.green { color: var(--green); }
+  .stat-box-val.gold { color: var(--accent); }
+  .stat-box-lbl { font-size: 9px; font-weight: 400; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 6px; }
+  .streak-bar { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .streak-bar-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .streak-bar-track { height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .streak-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.8s ease; }
+
+  /* ── Archive grid ── */
+  .archive-modal-full {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px 24px 24px;
+    width: 96vw;
+    max-width: 860px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .archive-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+  .archive-modal-header h2 {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .archive-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  @media (max-width: 600px) {
+    .archive-grid { grid-template-columns: repeat(2, 1fr); }
+    .archive-modal-full { padding: 20px 14px 14px; }
+  }
+  .archive-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .archive-card:hover { border-color: var(--border2); background: #1e1e1e; }
+  .archive-card.arc-active { border-color: rgba(100,120,255,0.5); background: rgba(100,120,255,0.05); }
+  .arc-card-header { display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px; }
+  .arc-num { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); }
+  .arc-by { font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.03em; }
+  .arc-divider { height: 1px; background: var(--border); margin-bottom: 10px; }
+  .arc-not-played {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted2);
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+    align-self: flex-start;
+  }
+  .arc-words {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: auto;
+    padding-top: 10px;
+  }
+  .arc-words span { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; color: var(--text); letter-spacing: 0.04em; }
+  .arc-ellipsis { color: var(--muted) !important; font-size: 11px !important; }
+
+  /* ── Mini board ── */
+  .mini-board { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+  .mini-row { display: flex; gap: 2px; }
+  .mini-cell {
+    width: 18px; height: 18px;
+    border-radius: 2px;
+    background: #222;
+    border: 1px solid #2a2a2a;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    font-weight: 500;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mini-cell.mini-start { background: #2a2060; border-color: rgba(160,140,255,0.3); color: #c4baf5; }
+  .mini-cell.mini-end   { background: #0f2e1e; border-color: rgba(74,158,110,0.3); color: #7ecba0; }
+  .mini-cell.mini-filled { background: #2a2a2a; border-color: #333; }
+  .mini-cell.mini-changed { outline: 1px solid rgba(255,255,255,0.3); outline-offset: 0px; }
+`;
+
+// ── Archive Modal ─────────────────────────────────────────────────
+function MiniBoard({
+  w1,
+  w2,
+  moves
+}) {
+  // Full sequence: start word, all moves, end word
+  const allWords = [w1, ...(moves || []), w2];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "mini-board"
+  }, allWords.map((word, r) => {
+    const prev = allWords[r - 1];
+    const isStart = r === 0;
+    const isEnd = r === allWords.length - 1;
+    return /*#__PURE__*/React.createElement("div", {
+      key: r,
+      className: "mini-row"
+    }, word.split('').map((letter, c) => {
+      const changed = prev && prev[c] !== letter;
+      return /*#__PURE__*/React.createElement("div", {
+        key: c,
+        className: `mini-cell${isStart ? ' mini-start' : isEnd ? ' mini-end' : ' mini-filled'}${changed ? ' mini-changed' : ''}`
+      }, letter);
+    }));
+  }));
+}
+function ArchiveModal({
+  onClose,
+  onSelect,
+  currentIndex
+}) {
+  const todayIndex = getPuzzleIndex();
+  const items = [];
+  for (let i = todayIndex; i >= 0 && i > todayIndex - 30; i--) {
+    const [w1, w2] = getPairForIndex(i);
+    const best = localStorage.getItem(getBestKey(i));
+    const movesRaw = localStorage.getItem(getMovesKey(i));
+    const moves = movesRaw ? JSON.parse(movesRaw) : null;
+    items.push({
+      index: i,
+      w1,
+      w2,
+      best: best ? parseInt(best) : null,
+      moves,
+      isToday: i === todayIndex
+    });
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "modal-bg",
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "archive-modal-full",
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "archive-modal-header"
+  }, /*#__PURE__*/React.createElement("h2", null, "The Archive"), /*#__PURE__*/React.createElement("button", {
+    className: "modal-close",
+    onClick: onClose
+  }, "\xD7")), /*#__PURE__*/React.createElement("div", {
+    className: "archive-grid"
+  }, items.map(({
+    index,
+    w1,
+    w2,
+    best,
+    moves,
+    isToday
+  }) => /*#__PURE__*/React.createElement("div", {
+    key: index,
+    className: `archive-card${currentIndex === index ? ' arc-active' : ''}`,
+    onClick: () => {
+      onSelect(index);
+      onClose();
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "arc-card-header"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "arc-num"
+  }, "#", index + 1), /*#__PURE__*/React.createElement("span", {
+    className: "arc-by"
+  }, "by Worder")), /*#__PURE__*/React.createElement("div", {
+    className: "arc-divider"
+  }), moves !== null ? /*#__PURE__*/React.createElement(MiniBoard, {
+    w1: w1,
+    w2: w2,
+    moves: moves
+  }) : /*#__PURE__*/React.createElement("div", {
+    className: "arc-not-played"
+  }, "Not played"), /*#__PURE__*/React.createElement("div", {
+    className: "arc-words"
+  }, /*#__PURE__*/React.createElement("span", null, w1.toLowerCase()), /*#__PURE__*/React.createElement("span", {
+    className: "arc-ellipsis"
+  }, "\u2026"), /*#__PURE__*/React.createElement("span", null, w2.toLowerCase())))))));
+}
+
+// ── Main App ──────────────────────────────────────────────────────
 function App() {
-  var _useState = useState(getDailyPair),
-    _useState2 = _slicedToArray(_useState, 1),
-    pair = _useState2[0];
-  var _useState3 = useState([]),
-    _useState4 = _slicedToArray(_useState3, 2),
-    rows = _useState4[0],
-    setRows = _useState4[1];
-  var _useState5 = useState([]),
-    _useState6 = _slicedToArray(_useState5, 2),
-    input = _useState6[0],
-    setInput = _useState6[1];
-  var _useState7 = useState(false),
-    _useState8 = _slicedToArray(_useState7, 2),
-    loading = _useState8[0],
-    setLoading = _useState8[1];
-  var _useState9 = useState({
-      text: "",
-      type: ""
-    }),
-    _useState0 = _slicedToArray(_useState9, 2),
-    feedback = _useState0[0],
-    setFeedback = _useState0[1];
-  var _useState1 = useState(false),
-    _useState10 = _slicedToArray(_useState1, 2),
-    won = _useState10[0],
-    setWon = _useState10[1];
-  var _useState11 = useState(null),
-    _useState12 = _slicedToArray(_useState11, 2),
-    bestToday = _useState12[0],
-    setBestToday = _useState12[1];
-  var _useState13 = useState(false),
-    _useState14 = _slicedToArray(_useState13, 2),
-    newRecord = _useState14[0],
-    setNewRecord = _useState14[1];
-  var _useState15 = useState(getCountdown()),
-    _useState16 = _slicedToArray(_useState15, 2),
-    countdown = _useState16[0],
-    setCountdown = _useState16[1];
-  var _useState17 = useState(false),
-    _useState18 = _slicedToArray(_useState17, 2),
-    showHelp = _useState18[0],
-    setShowHelp = _useState18[1];
-  var _useState19 = useState(false),
-    _useState20 = _slicedToArray(_useState19, 2),
-    showStats = _useState20[0],
-    setShowStats = _useState20[1];
-  var _useState21 = useState(loadStats),
-    _useState22 = _slicedToArray(_useState21, 2),
-    stats = _useState22[0],
-    setStats = _useState22[1];
-  var _useState23 = useState(false),
-    _useState24 = _slicedToArray(_useState23, 2),
-    shaking = _useState24[0],
-    setShaking = _useState24[1];
-  var _useState25 = useState(false),
-    _useState26 = _slicedToArray(_useState25, 2),
-    confetti = _useState26[0],
-    setConfetti = _useState26[1];
-  var inputRef = useRef(null);
-  var _pair = _slicedToArray(pair, 2),
-    startWord = _pair[0],
-    endWord = _pair[1];
-  var wordLen = startWord.length;
-  var allWords = [startWord].concat(_toConsumableArray(rows.map(function (r) {
-    return r.word;
-  })));
-  var currentWord = allWords[allWords.length - 1];
-  var today = new Date().toLocaleDateString("en-US", {
+  const todayIndex = getPuzzleIndex();
+  const [puzzleIndex, setPuzzleIndex] = useState(todayIndex);
+  const isToday = puzzleIndex === todayIndex;
+  const [startWord, endWord] = getPairForIndex(puzzleIndex);
+  const wordLen = startWord.length;
+  const [rows, setRows] = useState([]);
+  const [input, setInput] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState({
+    text: "",
+    type: ""
+  });
+  const [won, setWon] = useState(false);
+  const [bestToday, setBestToday] = useState(null);
+  const [newRecord, setNewRecord] = useState(false);
+  const [countdown, setCountdown] = useState(getCountdown());
+  const [showHelp, setShowHelp] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
+  const [stats, setStats] = useState(loadStats);
+  const [shaking, setShaking] = useState(false);
+  const [confetti, setConfetti] = useState(false);
+  const inputRef = useRef(null);
+  const keyHandledRef = useRef(false);
+  const allWords = [startWord, ...rows.map(r => r.word)];
+  const currentWord = allWords[allWords.length - 1];
+  const today = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "numeric"
   });
-  useEffect(function () {
-    var s = localStorage.getItem(getTodayKey());
-    if (s) setBestToday(parseInt(s));
+
+  // Load best score when puzzle changes
+  useEffect(() => {
+    const s = localStorage.getItem(getBestKey(puzzleIndex));
+    setBestToday(s ? parseInt(s) : null);
+    setRows([]);
+    setInput([]);
+    setFeedback({
+      text: "",
+      type: ""
+    });
+    setWon(false);
+    setNewRecord(false);
+    setConfetti(false);
+    setTimeout(() => inputRef.current?.focus({
+      preventScroll: true
+    }), 50);
+  }, [puzzleIndex]);
+  useEffect(() => {
+    const t = setInterval(() => setCountdown(getCountdown()), 1000);
+    return () => clearInterval(t);
   }, []);
-  useEffect(function () {
-    var t = setInterval(function () {
-      return setCountdown(getCountdown());
-    }, 1000);
-    return function () {
-      return clearInterval(t);
-    };
-  }, []);
-  var focus = function focus() {
-    var _inputRef$current;
-    return (_inputRef$current = inputRef.current) === null || _inputRef$current === void 0 ? void 0 : _inputRef$current.focus({ preventScroll: true });
-  };
-  var keyHandledRef = useRef(false);
+  const focus = () => inputRef.current?.focus({
+    preventScroll: true
+  });
   function handleKey(e) {
     if (won || loading) return;
-    var key = e.key.toUpperCase();
+    const key = e.key.toUpperCase();
     if (/^[A-Z]$/.test(key) && input.length < wordLen) {
       keyHandledRef.current = true;
-      setInput(function (prev) {
-        return [].concat(_toConsumableArray(prev), [key]);
+      setInput(prev => [...prev, key]);
+      setFeedback({
+        text: "",
+        type: ""
       });
-      setFeedback({ text: "", type: "" });
     } else if (e.key === "Backspace") {
       keyHandledRef.current = true;
-      setInput(function (prev) { return prev.slice(0, -1); });
-      setFeedback({ text: "", type: "" });
+      setInput(prev => prev.slice(0, -1));
+      setFeedback({
+        text: "",
+        type: ""
+      });
     } else if (e.key === "Enter") {
       keyHandledRef.current = true;
       handleSubmit();
@@ -410,126 +780,92 @@ function App() {
     }
   }
   function handleChange(e) {
-    // Skip if onKeyDown already handled this keystroke (desktop)
-    if (keyHandledRef.current) { keyHandledRef.current = false; e.target.value = ""; return; }
+    if (keyHandledRef.current) {
+      keyHandledRef.current = false;
+      e.target.value = "";
+      return;
+    }
     if (won || loading) return;
-    var val = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+    const val = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
     e.target.value = "";
     if (!val) return;
-    var lastChar = val[val.length - 1];
-    setInput(function (prev) {
+    const lastChar = val[val.length - 1];
+    setInput(prev => {
       if (prev.length < wordLen) {
-        setFeedback({ text: "", type: "" });
-        return [].concat(_toConsumableArray(prev), [lastChar]);
+        setFeedback({
+          text: "",
+          type: ""
+        });
+        return [...prev, lastChar];
       }
       return prev;
     });
   }
-  function handleSubmit() {
-    return _handleSubmit.apply(this, arguments);
-  }
-  function _handleSubmit() {
-    _handleSubmit = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-      var word, diff, valid, changedPos, newRows, steps, key, existing, isNew, todayStr, s, yesterday;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.n) {
-          case 0:
-            word = input.join("");
-            if (!(word.length !== wordLen || loading || won)) {
-              _context.n = 1;
-              break;
-            }
-            return _context.a(2);
-          case 1:
-            diff = letterDiff(currentWord, word);
-            if (!(diff === 0)) {
-              _context.n = 2;
-              break;
-            }
-            triggerError("Same as current word");
-            return _context.a(2);
-          case 2:
-            if (!(diff !== 1)) {
-              _context.n = 3;
-              break;
-            }
-            triggerError("Change exactly 1 letter (changed ".concat(diff, ")"));
-            return _context.a(2);
-          case 3:
-            if (!allWords.includes(word)) {
-              _context.n = 4;
-              break;
-            }
-            triggerError("Already used that word");
-            return _context.a(2);
-          case 4:
-            setLoading(true);
-            setFeedback({
-              text: "Checking…",
-              type: "loading"
-            });
-            _context.n = 5;
-            return isRealWord(word);
-          case 5:
-            valid = _context.v;
-            if (valid) {
-              _context.n = 6;
-              break;
-            }
-            triggerError("\"".concat(word, "\" isn't a valid word"));
-            setLoading(false);
-            return _context.a(2);
-          case 6:
-            changedPos = diffPositions(currentWord, word);
-            newRows = [].concat(_toConsumableArray(rows), [{
-              word: word,
-              changedPos: changedPos
-            }]);
-            setRows(newRows);
-            setInput([]);
-            setFeedback({
-              text: "",
-              type: ""
-            });
-            if (word === endWord) {
-              steps = newRows.length;
-              key = getTodayKey();
-              existing = localStorage.getItem(key);
-              isNew = !existing || steps < parseInt(existing);
-              if (isNew) {
-                localStorage.setItem(key, String(steps));
-                setBestToday(steps);
-                setNewRecord(true);
-              }
-              var now = new Date();
-              todayStr = now.getUTCFullYear() + "-" + now.getUTCMonth() + "-" + now.getUTCDate();
-              s = loadStats();
-              s.played += 1;
-              s.wins += 1;
-              s.totalSteps += steps;
-              yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
-              var yesterdayStr = yesterday.getUTCFullYear() + "-" + yesterday.getUTCMonth() + "-" + yesterday.getUTCDate();
-              s.streak = s.lastWinDate === yesterdayStr || s.lastWinDate === todayStr ? s.streak + 1 : 1;
-              s.bestStreak = Math.max(s.bestStreak, s.streak);
-              s.lastWinDate = todayStr;
-              saveStats(s);
-              setStats(s);
-              setConfetti(true);
-              setTimeout(function () {
-                return setWon(true);
-              }, 400);
-              setTimeout(function () {
-                return setConfetti(false);
-              }, 4000);
-            }
-            setLoading(false);
-            setTimeout(focus, 50);
-          case 7:
-            return _context.a(2);
-        }
-      }, _callee);
-    }));
-    return _handleSubmit.apply(this, arguments);
+  async function handleSubmit() {
+    const word = input.join("");
+    if (word.length !== wordLen || loading || won) return;
+    const diff = letterDiff(currentWord, word);
+    if (diff === 0) {
+      triggerError("Same as current word");
+      return;
+    }
+    if (diff !== 1) {
+      triggerError(`Change exactly 1 letter (changed ${diff})`);
+      return;
+    }
+    setLoading(true);
+    setFeedback({
+      text: "Checking…",
+      type: "loading"
+    });
+    const valid = await isRealWord(word);
+    if (!valid) {
+      triggerError(`"${word}" isn't a valid word`);
+      setLoading(false);
+      return;
+    }
+    const changedPos = diffPositions(currentWord, word);
+    const newRows = [...rows, {
+      word,
+      changedPos
+    }];
+    setRows(newRows);
+    setInput([]);
+    setFeedback({
+      text: "",
+      type: ""
+    });
+    if (word === endWord) {
+      const steps = newRows.length;
+      const existing = localStorage.getItem(getBestKey(puzzleIndex));
+      const isNew = !existing || steps < parseInt(existing);
+      if (isNew) {
+        localStorage.setItem(getBestKey(puzzleIndex), String(steps));
+        setBestToday(steps);
+        setNewRecord(true);
+      }
+      localStorage.setItem(getMovesKey(puzzleIndex), JSON.stringify(newRows.map(r => r.word)));
+      if (isToday) {
+        const now = new Date();
+        const todayStr = now.getUTCFullYear() + "-" + now.getUTCMonth() + "-" + now.getUTCDate();
+        const s = loadStats();
+        s.played += 1;
+        s.wins += 1;
+        s.totalSteps += steps;
+        const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+        const yStr = yesterday.getUTCFullYear() + "-" + yesterday.getUTCMonth() + "-" + yesterday.getUTCDate();
+        s.streak = s.lastWinDate === yStr || s.lastWinDate === todayStr ? s.streak + 1 : 1;
+        s.bestStreak = Math.max(s.bestStreak, s.streak);
+        s.lastWinDate = todayStr;
+        saveStats(s);
+        setStats(s);
+      }
+      setConfetti(true);
+      setTimeout(() => setWon(true), 400);
+      setTimeout(() => setConfetti(false), 4000);
+    }
+    setLoading(false);
+    setTimeout(focus, 50);
   }
   function triggerError(msg) {
     setFeedback({
@@ -537,9 +873,7 @@ function App() {
       type: "error"
     });
     setShaking(true);
-    setTimeout(function () {
-      return setShaking(false);
-    }, 400);
+    setTimeout(() => setShaking(false), 400);
   }
   function reset() {
     setRows([]);
@@ -553,74 +887,58 @@ function App() {
     setConfetti(false);
     setTimeout(focus, 50);
   }
-  function WordRow(_ref2) {
-    var word = _ref2.word,
-      prevWord = _ref2.prevWord,
-      color = _ref2.color,
-      anchor = _ref2.anchor,
-      isEnd = _ref2.isEnd;
-    var changed = prevWord ? diffPositions(prevWord, word) : [];
+  function shareWhatsApp() {
+    const emojiRows = rows.map((r, i) => r.word.split("").map((_, j) => allWords[i][j] !== r.word[j] ? "🟢" : "⚪").join("")).join("\n");
+    const puzzleLabel = isToday ? today : `Puzzle #${puzzleIndex + 1}`;
+    const text = `🔤 *Worder* · ${puzzleLabel}\n\n*${startWord}*\n${emojiRows}\n*${endWord}*\n\nSolved in *${rows.length} step${rows.length === 1 ? "" : "s"}*! Can you beat me?\n${SITE_URL}`;
+    if (navigator.share) navigator.share({
+      text
+    }).catch(() => {});else navigator.clipboard.writeText(text).then(() => alert("Copied! Paste into WhatsApp.")).catch(() => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank"));
+  }
+  function WordRow({
+    word,
+    prevWord,
+    color,
+    anchor,
+    isEnd
+  }) {
+    const changed = prevWord ? diffPositions(prevWord, word) : [];
     return /*#__PURE__*/React.createElement("div", {
       className: "grid-row"
     }, /*#__PURE__*/React.createElement("div", {
       className: "tiles"
-    }, word.split("").map(function (l, i) {
-      return /*#__PURE__*/React.createElement("div", {
-        key: i,
-        className: "tile ".concat(anchor ? isEnd ? "anchor-end" : "anchor-start" : "filled").concat(changed.includes(i) ? " changed" : ""),
-        style: anchor ? {} : {
-          background: color
-        }
-      }, l);
-    })));
+    }, word.split("").map((l, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: `tile ${anchor ? isEnd ? "anchor-end" : "anchor-start" : "filled"}${changed.includes(i) ? " changed" : ""}`,
+      style: anchor ? {} : {
+        background: color
+      }
+    }, l))));
   }
   function ActiveRow() {
     return /*#__PURE__*/React.createElement("div", {
       className: "grid-row"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "tiles".concat(shaking ? " shake" : "")
-    }, input.map(function (l, i) {
-      return /*#__PURE__*/React.createElement("div", {
-        key: i,
-        className: "cursor-tile lit"
-      }, l);
-    }), input.length < wordLen && /*#__PURE__*/React.createElement("div", {
+      className: `tiles${shaking ? " shake" : ""}`
+    }, input.map((l, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "cursor-tile lit"
+    }, l)), input.length < wordLen && /*#__PURE__*/React.createElement("div", {
       className: "cursor-tile lit caret"
     }), Array.from({
       length: Math.max(0, wordLen - input.length - 1)
-    }).map(function (_, i) {
-      return /*#__PURE__*/React.createElement("div", {
-        key: i,
-        className: "cursor-tile"
-      });
-    })));
+    }).map((_, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "cursor-tile"
+    }))));
   }
-  var exWords = ["COLD", "CORD", "WORD", "WARD", "WARM"];
-  function shareWhatsApp() {
-    var emojiRows = rows.map(function (r, i) {
-      return r.word.split("").map(function (_, j) {
-        return allWords[i][j] !== r.word[j] ? "🟢" : "⚪";
-      }).join("");
-    }).join("\n");
-    var text = "\uD83D\uDD24 *Ladder* \xB7 ".concat(today, "\n\n*").concat(startWord, "*\n").concat(emojiRows, "\n*").concat(endWord, "*\n\nSolved in *").concat(rows.length, " step").concat(rows.length === 1 ? "" : "s", "*! Can you beat me?\n").concat(SITE_URL);
-    if (navigator.share) {
-      navigator.share({
-        text: text
-      })["catch"](function () {});
-    } else {
-      navigator.clipboard.writeText(text).then(function () {
-        alert("Copied! Paste into WhatsApp.");
-      })["catch"](function () {
-        window.open("https://wa.me/?text=".concat(encodeURIComponent(text)), "_blank");
-      });
-    }
-  }
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Confetti, {
+  const exWords = ["COLD", "CORD", "WORD", "WARD", "WARM"];
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, CSS), /*#__PURE__*/React.createElement(Confetti, {
     active: confetti
   }), /*#__PURE__*/React.createElement("div", {
     className: "app",
     onClick: focus,
-    onTouchStart: function(e) { focus(); }
+    onTouchStart: focus
   }, /*#__PURE__*/React.createElement("input", {
     ref: inputRef,
     className: "hidden-input",
@@ -636,66 +954,162 @@ function App() {
     className: "header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-title"
-  }, "Ladder"), /*#__PURE__*/React.createElement("div", {
+  }, "Worder"), /*#__PURE__*/React.createElement("div", {
     className: "header-icons"
   }, /*#__PURE__*/React.createElement("button", {
     className: "icon-btn",
-    onClick: function onClick(e) {
+    title: "Archive",
+    onClick: e => {
+      e.stopPropagation();
+      setShowArchive(true);
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.5",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "2",
+    y: "4",
+    width: "20",
+    height: "5",
+    rx: "1"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10 13h4"
+  }))), /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn",
+    title: "Stats",
+    onClick: e => {
       e.stopPropagation();
       setShowStats(true);
     }
-  }, "\uD83D\uDCCA"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.5",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "12",
+    width: "4",
+    height: "9",
+    rx: "1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "10",
+    y: "7",
+    width: "4",
+    height: "14",
+    rx: "1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "17",
+    y: "3",
+    width: "4",
+    height: "18",
+    rx: "1"
+  }))), /*#__PURE__*/React.createElement("button", {
     className: "icon-btn",
-    onClick: function onClick(e) {
+    title: "Help",
+    onClick: e => {
       e.stopPropagation();
       setShowHelp(true);
     }
-  }, "\u2753"))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.5",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "17",
+    r: ".5",
+    fill: "currentColor"
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "puzzle-label"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "puzzle-num"
+  }, "#", puzzleIndex + 1), !isToday && /*#__PURE__*/React.createElement("span", {
+    className: "archive-playing"
+  }, "\xB7 Archive", /*#__PURE__*/React.createElement("button", {
+    className: "back-today-btn",
+    onClick: e => {
+      e.stopPropagation();
+      setPuzzleIndex(todayIndex);
+    }
+  }, "Back to today"))), /*#__PURE__*/React.createElement("div", {
     className: "sub-label"
-  }, "Change 1 letter per step \xB7 ", today), /*#__PURE__*/React.createElement("div", {
+  }, "Change 1 letter per step"), /*#__PURE__*/React.createElement("div", {
     className: "grid"
   }, /*#__PURE__*/React.createElement(WordRow, {
     word: startWord,
     anchor: true
-  }), rows.map(function (r, i) {
-    return /*#__PURE__*/React.createElement(WordRow, {
-      key: i,
-      word: r.word,
-      color: ROW_COLORS[(i + 1) % ROW_COLORS.length],
-      prevWord: allWords[i]
-    });
-  }), !won && rows.length < MAX_ROWS && /*#__PURE__*/React.createElement(ActiveRow, null), /*#__PURE__*/React.createElement(WordRow, {
+  }), rows.map((r, i) => /*#__PURE__*/React.createElement(WordRow, {
+    key: i,
+    word: r.word,
+    color: ROW_COLORS[(i + 1) % ROW_COLORS.length],
+    prevWord: allWords[i]
+  })), !won && rows.length < MAX_ROWS && /*#__PURE__*/React.createElement(ActiveRow, null), /*#__PURE__*/React.createElement(WordRow, {
     word: endWord,
     anchor: true,
     isEnd: true
   })), !won && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "feedback-bar ".concat(feedback.type)
+    className: `feedback-bar ${feedback.type}`
   }, feedback.text), /*#__PURE__*/React.createElement("button", {
     className: "submit-btn",
     disabled: input.length !== wordLen || loading,
-    onClick: function onClick(e) {
+    onClick: e => {
       e.stopPropagation();
       handleSubmit();
     }
-  }, loading ? "Checking…" : "Submit →")), /*#__PURE__*/React.createElement("div", {
+  }, loading ? "Checking…" : "Submit →")), isToday && /*#__PURE__*/React.createElement("div", {
     className: "countdown-pill"
-  }, "Next Ladder in ", /*#__PURE__*/React.createElement("strong", null, countdown)), /*#__PURE__*/React.createElement("div", {
+  }, "Next Worder in ", /*#__PURE__*/React.createElement("strong", null, countdown)), /*#__PURE__*/React.createElement("div", {
+    className: "ad-slot"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ad-label"
+  }, "Advertisement"), /*#__PURE__*/React.createElement("ins", {
+    className: "adsbygoogle",
+    style: {
+      display: "block"
+    },
+    "data-ad-client": "ca-pub-YOUR_ADSENSE_ID",
+    "data-ad-slot": "YOUR_AD_SLOT_ID",
+    "data-ad-format": "auto",
+    "data-full-width-responsive": "true"
+  })), /*#__PURE__*/React.createElement("div", {
     className: "footer-links"
-  }, /*#__PURE__*/React.createElement("span", null, "A new puzzle every day at midnight"))), won && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "A new puzzle every day at midnight UTC"))), won && /*#__PURE__*/React.createElement("div", {
     className: "win-overlay",
     onClick: reset
   }, /*#__PURE__*/React.createElement("div", {
     className: "win-box",
-    onClick: function onClick(e) {
-      return e.stopPropagation();
-    }
+    onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
     className: "win-emoji"
   }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
     className: "win-title"
   }, "Solved!"), /*#__PURE__*/React.createElement("div", {
     className: "win-sub"
-  }, startWord, " \u2192 ", endWord), /*#__PURE__*/React.createElement("div", {
+  }, startWord, " \u2192 ", endWord, " \xB7 #", puzzleIndex + 1), /*#__PURE__*/React.createElement("div", {
     className: "win-stats"
   }, /*#__PURE__*/React.createElement("div", {
     className: "win-stat"
@@ -718,7 +1132,7 @@ function App() {
     onClick: reset
   }, "Try again"), /*#__PURE__*/React.createElement("button", {
     className: "whatsapp-btn",
-    onClick: function onClick(e) {
+    onClick: e => {
       e.stopPropagation();
       shareWhatsApp();
     }
@@ -731,21 +1145,30 @@ function App() {
     d: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
   }), /*#__PURE__*/React.createElement("path", {
     d: "M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.428a.5.5 0 0 0 .609.601l5.794-1.522A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.655-.516-5.17-1.415l-.37-.22-3.838 1.006 1.028-3.736-.241-.386A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
-  })), "Share on WhatsApp")))), showStats && /*#__PURE__*/React.createElement("div", {
-    className: "modal-bg",
-    onClick: function onClick() {
-      return setShowStats(false);
+  })), "Share"), !isToday && /*#__PURE__*/React.createElement("button", {
+    className: "try-again-btn",
+    style: {
+      borderColor: "#6C5CE7",
+      color: "#6C5CE7"
+    },
+    onClick: e => {
+      e.stopPropagation();
+      setPuzzleIndex(todayIndex);
+      setWon(false);
     }
+  }, "Today's puzzle \u2192")))), showArchive && /*#__PURE__*/React.createElement(ArchiveModal, {
+    onClose: () => setShowArchive(false),
+    onSelect: setPuzzleIndex,
+    currentIndex: puzzleIndex
+  }), showStats && /*#__PURE__*/React.createElement("div", {
+    className: "modal-bg",
+    onClick: () => setShowStats(false)
   }, /*#__PURE__*/React.createElement("div", {
     className: "modal",
-    onClick: function onClick(e) {
-      return e.stopPropagation();
-    }
+    onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     className: "modal-close",
-    onClick: function onClick() {
-      return setShowStats(false);
-    }
+    onClick: () => setShowStats(false)
   }, "\xD7"), /*#__PURE__*/React.createElement("h2", null, "Your Stats"), /*#__PURE__*/React.createElement("div", {
     className: "stats-grid"
   }, /*#__PURE__*/React.createElement("div", {
@@ -776,7 +1199,7 @@ function App() {
     className: "stat-box"
   }, /*#__PURE__*/React.createElement("div", {
     className: "stat-box-val green"
-  }, bestToday !== null && bestToday !== void 0 ? bestToday : "–"), /*#__PURE__*/React.createElement("div", {
+  }, bestToday ?? "–"), /*#__PURE__*/React.createElement("div", {
     className: "stat-box-lbl"
   }, "Today's Best")), /*#__PURE__*/React.createElement("div", {
     className: "stat-box"
@@ -788,12 +1211,12 @@ function App() {
     className: "streak-bar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "streak-bar-label"
-  }, /*#__PURE__*/React.createElement("span", null, "Current streak"), /*#__PURE__*/React.createElement("span", null, stats.streak, " / ", stats.bestStreak, " best")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "Current streak"), /*#__PURE__*/React.createElement("span", null, stats.streak, "/", stats.bestStreak, " best")), /*#__PURE__*/React.createElement("div", {
     className: "streak-bar-track"
   }, /*#__PURE__*/React.createElement("div", {
     className: "streak-bar-fill",
     style: {
-      width: "".concat(Math.min(100, stats.streak / Math.max(stats.bestStreak, 1) * 100), "%")
+      width: `${Math.min(100, stats.streak / Math.max(stats.bestStreak, 1) * 100)}%`
     }
   }))), stats.played === 0 && /*#__PURE__*/React.createElement("p", {
     style: {
@@ -803,46 +1226,40 @@ function App() {
     }
   }, "Play your first game to see stats!"))), showHelp && /*#__PURE__*/React.createElement("div", {
     className: "modal-bg",
-    onClick: function onClick() {
-      return setShowHelp(false);
-    }
+    onClick: () => setShowHelp(false)
   }, /*#__PURE__*/React.createElement("div", {
     className: "modal",
-    onClick: function onClick(e) {
-      return e.stopPropagation();
-    }
+    onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     className: "modal-close",
-    onClick: function onClick() {
-      return setShowHelp(false);
-    }
+    onClick: () => setShowHelp(false)
   }, "\xD7"), /*#__PURE__*/React.createElement("h2", null, "How to play"), /*#__PURE__*/React.createElement("p", null, "Turn the ", /*#__PURE__*/React.createElement("strong", null, "start word"), " into the ", /*#__PURE__*/React.createElement("strong", null, "target word"), " by changing ", /*#__PURE__*/React.createElement("strong", null, "exactly one letter"), " at a time. Every step must be a real word."), /*#__PURE__*/React.createElement("div", {
     className: "modal-example"
-  }, exWords.map(function (w, i) {
-    var prev = i > 0 ? exWords[i - 1] : null;
-    var changed = prev ? diffPositions(prev, w) : [];
+  }, exWords.map((w, i) => {
+    const prev = i > 0 ? exWords[i - 1] : null;
+    const changed = prev ? diffPositions(prev, w) : [];
     return /*#__PURE__*/React.createElement("div", {
       key: w,
       className: "ex-row"
-    }, w.split("").map(function (l, j) {
-      return /*#__PURE__*/React.createElement("div", {
-        key: j,
-        className: "ex-tile".concat(changed.includes(j) ? " changed-ex" : ""),
-        style: {
-          background: ROW_COLORS[i % ROW_COLORS.length]
-        }
-      }, l);
-    }), changed.length > 0 && /*#__PURE__*/React.createElement("span", {
+    }, w.split("").map((l, j) => /*#__PURE__*/React.createElement("div", {
+      key: j,
+      className: `ex-tile${changed.includes(j) ? " changed-ex" : ""}`,
+      style: {
+        background: ROW_COLORS[i % ROW_COLORS.length]
+      }
+    }, l)), changed.length > 0 && /*#__PURE__*/React.createElement("span", {
       className: "ex-label"
     }, "\u2190 changed \"", w[changed[0]], "\""));
   })), /*#__PURE__*/React.createElement("p", null, "Fewer steps = better. Beat your personal best each day!"), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "#555"
     }
-  }, "New puzzle drops every day at midnight."))));
+  }, "New puzzle drops every day at midnight UTC."))));
 }
-ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
 
-</script>
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
+  setTimeout(function() { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {} }, 500);
+  
+  </script>
 </body>
 </html>
