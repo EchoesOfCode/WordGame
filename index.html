@@ -32,7 +32,6 @@ const { useState, useEffect, useRef } = React;
 const SITE_URL = "https://echoesofcode.github.io/WordGame/";
 const WORD_PAIRS = [["SAND", "TRAP"], ["COLD", "WARM"], ["FIRE", "WIND"], ["LEAD", "GOLD"], ["HATE", "LOVE"], ["DARK", "LAMP"], ["HEAD", "TAIL"], ["WORK", "PLAY"], ["SHIP", "DOCK"], ["MAKE", "TAKE"], ["HAND", "FOOT"], ["STAR", "STOP"], ["WINE", "DINE"], ["BEAR", "LION"], ["PLAN", "PLOT"], ["SLIP", "TRIP"], ["BLUE", "CLUE"], ["FARM", "FIRM"], ["COAL", "COAT"], ["BALE", "TALE"], ["BOLD", "COLD"], ["WORD", "WARD"], ["PALE", "TALE"], ["PINE", "WINE"], ["HIRE", "FIRE"], ["BONE", "CONE"], ["LAKE", "LANE"], ["RING", "KING"], ["BOOT", "BOOK"], ["CORD", "WORD"]];
 const ROW_COLORS = ["#6C5CE7", "#8B3FD9", "#B030B0", "#D62878", "#E83020", "#F06010", "#F09000", "#E8B000", "#C8C000", "#88B800"];
-const MAX_ROWS = 12;
 const CONFETTI_COLORS = ["#6C5CE7", "#F09000", "#4ade80", "#f472b6", "#60a5fa", "#fbbf24", "#e07070", "#fff"];
 const STATS_KEY = "worder-stats-v1";
 const EPOCH = new Date(Date.UTC(2026, 2, 4)); // March 4 2026 = puzzle #1
@@ -286,8 +285,19 @@ const CSS = `
     margin-bottom: 24px;
     width: 100%;
   }
-  .grid-row { display: flex; justify-content: center; gap: 5px; }
+  .grid-row { display: flex; justify-content: center; gap: 5px; align-items: center; }
   .tiles { display: flex; gap: 5px; justify-content: center; }
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+    margin-right: 4px;
+    user-select: none;
+  }
 
   .tile {
     width: var(--tile-size);
@@ -506,7 +516,11 @@ const CSS = `
   .streak-bar-track { height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
   .streak-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.8s ease; }
 
-  /* ── Archive grid ── */
+  @media (max-width: 480px) {
+    :root { --tile-size: 44px; }
+    .tile { font-size: 16px; }
+    .cursor-tile { font-size: 16px; }
+  }
   .archive-modal-full {
     background: var(--surface);
     border: 1px solid var(--border2);
@@ -738,6 +752,7 @@ function App() {
   const [confetti, setConfetti] = useState(false);
   const inputRef = useRef(null);
   const keyHandledRef = useRef(false);
+  const activeRowRef = useRef(null);
   const allWords = [startWord, ...rows.map(r => r.word)];
   const currentWord = allWords[allWords.length - 1];
   const today = new Date().toLocaleDateString("en-US", {
@@ -849,6 +864,12 @@ function App() {
       text: "",
       type: ""
     });
+    setTimeout(() => {
+      activeRowRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }, 50);
     if (word === endWord) {
       const steps = newRows.length;
       const existing = localStorage.getItem(getBestKey(puzzleIndex));
@@ -914,12 +935,15 @@ function App() {
     prevWord,
     color,
     anchor,
-    isEnd
+    isEnd,
+    stepNum
   }) {
     const changed = prevWord ? diffPositions(prevWord, word) : [];
     return /*#__PURE__*/React.createElement("div", {
       className: "grid-row"
     }, /*#__PURE__*/React.createElement("div", {
+      className: "step-num"
+    }, stepNum != null ? stepNum : ''), /*#__PURE__*/React.createElement("div", {
       className: "tiles"
     }, word.split("").map((l, i) => /*#__PURE__*/React.createElement("div", {
       key: i,
@@ -931,8 +955,11 @@ function App() {
   }
   function ActiveRow() {
     return /*#__PURE__*/React.createElement("div", {
-      className: "grid-row"
+      className: "grid-row",
+      ref: activeRowRef
     }, /*#__PURE__*/React.createElement("div", {
+      className: "step-num"
+    }, rows.length + 1), /*#__PURE__*/React.createElement("div", {
       className: `tiles${shaking ? " shake" : ""}`
     }, input.map((l, i) => /*#__PURE__*/React.createElement("div", {
       key: i,
@@ -1080,8 +1107,9 @@ function App() {
     key: i,
     word: r.word,
     color: ROW_COLORS[(i + 1) % ROW_COLORS.length],
-    prevWord: allWords[i]
-  })), !won && rows.length < MAX_ROWS && /*#__PURE__*/React.createElement(ActiveRow, null), /*#__PURE__*/React.createElement(WordRow, {
+    prevWord: allWords[i],
+    stepNum: i + 1
+  })), !won && /*#__PURE__*/React.createElement(ActiveRow, null), /*#__PURE__*/React.createElement(WordRow, {
     word: endWord,
     anchor: true,
     isEnd: true
